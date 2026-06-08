@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Co-op Tracker</title>
+    <script>
+      // SPA fallback for GitHub Pages. This app is a single page that switches
+      // views in-memory (no client-side router), so any unknown path simply
+      // redirects to the app root. Preserves the repo subpath on Pages.
+      (function () {
+        var path = window.location.pathname;
+        // Keep everything up to and including the first path segment (the repo
+        // name on a project page), then send the user to its index.
+        var segments = path.split('/').filter(Boolean);
+        var base = segments.length > 0 ? '/' + segments[0] + '/' : '/';
+        window.location.replace(base);
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting…</p>
+  </body>
+</html>
