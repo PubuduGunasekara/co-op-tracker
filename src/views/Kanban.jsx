@@ -1,17 +1,19 @@
 import { useState } from 'react'
 import { useApp } from '../store.jsx'
 import { TierTag, PriorityTag, UrgencyBadge } from '../components/ui/Badges.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import { STATUSES, STATUS_STYLES } from '../lib/constants.js'
 import { formatDate } from '../lib/dates.js'
-import { EditIcon, ExternalIcon } from '../components/ui/Icons.jsx'
+import { EditIcon, ExternalIcon, TrashIcon } from '../components/ui/Icons.jsx'
 
 // Kanban board: one column per status. Cards use the native HTML5 drag-and-drop
 // API (no dependency). Dropping a card calls moveApplicationStatus, which records
 // statusHistory + lastActivityDate in the store.
 export default function Kanban({ apps, onEdit }) {
-  const { moveApplicationStatus, toast } = useApp()
+  const { moveApplicationStatus, deleteApplication, toast } = useApp()
   const [dragId, setDragId] = useState(null)
   const [overCol, setOverCol] = useState(null)
+  const [confirm, setConfirm] = useState(null)
 
   const byStatus = (status) => apps.filter((a) => a.status === status)
 
@@ -81,9 +83,18 @@ export default function Kanban({ apps, onEdit }) {
                         </a>
                       )}
                     </div>
-                    <button className="btn-ghost -mr-1 -mt-1 p-1 text-slate-400" onClick={() => onEdit(a)} aria-label={`Edit ${a.company}`}>
-                      <EditIcon className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="-mr-1 -mt-1 flex shrink-0 items-center gap-0.5">
+                      <button className="btn-ghost p-1 text-slate-400" onClick={() => onEdit(a)} aria-label={`Edit ${a.company}`}>
+                        <EditIcon className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        className="btn-ghost p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                        onClick={() => setConfirm(a)}
+                        aria-label={`Delete ${a.company}`}
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                   <p className="mt-0.5 text-xs text-slate-400">{a.role}</p>
                   <div className="mt-2 flex flex-wrap gap-1.5">
@@ -110,6 +121,17 @@ export default function Kanban({ apps, onEdit }) {
           </div>
         )
       })}
+
+      <ConfirmDialog
+        open={!!confirm}
+        onClose={() => setConfirm(null)}
+        onConfirm={() => {
+          deleteApplication(confirm.id)
+          toast(`Deleted ${confirm.company}.`)
+        }}
+        title="Delete application?"
+        message={`This will permanently remove "${confirm?.company}" and its history. This cannot be undone.`}
+      />
     </div>
   )
 }

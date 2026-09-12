@@ -3,6 +3,7 @@ import { useApp } from './store.jsx'
 import Dashboard from './views/Dashboard.jsx'
 import Applications from './views/Applications.jsx'
 import Calendar from './views/Calendar.jsx'
+import Timeline from './views/Timeline.jsx'
 import Referrals from './views/Referrals.jsx'
 import Interviews from './views/Interviews.jsx'
 import Toasts from './components/ui/Toasts.jsx'
@@ -18,11 +19,13 @@ import {
   MoonIcon,
   MenuIcon,
   CloseIcon,
+  TrendingIcon,
 } from './components/ui/Icons.jsx'
 
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
   { id: 'applications', label: 'Applications', Icon: TableIcon },
+  { id: 'timeline', label: 'Timeline', Icon: TrendingIcon },
   { id: 'calendar', label: 'Calendar', Icon: CalendarIcon },
   { id: 'referrals', label: 'Referrals', Icon: UsersIcon },
   { id: 'interviews', label: 'Interviews', Icon: ChatIcon },
@@ -84,6 +87,7 @@ export default function App() {
           <div className="animate-fade-in">
             {view === 'dashboard' && <Dashboard onNavigate={go} />}
             {view === 'applications' && <Applications />}
+            {view === 'timeline' && <Timeline />}
             {view === 'calendar' && <Calendar />}
             {view === 'referrals' && <Referrals />}
             {view === 'interviews' && <Interviews />}

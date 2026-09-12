@@ -106,6 +106,8 @@ export const TIER_STYLES = {
 export const CYCLE_TYPES = [
   'Northeastern Co-op (Jan start)',
   'Summer Internship',
+  'Winter Co-op (Jan – Apr)',
+  'Summer Co-op (May – Aug)',
   'Off-cycle/Fall',
 ]
 

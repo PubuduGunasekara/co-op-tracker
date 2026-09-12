@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react'
 import { useApp } from '../store.jsx'
 import ApplicationsTable from './ApplicationsTable.jsx'
 import Kanban from './Kanban.jsx'
+import CompanyGroups from './CompanyGroups.jsx'
 import ApplicationForm from '../components/ApplicationForm.jsx'
 import { TIERS, STATUSES, CYCLE_TYPES, SOURCES, PRIORITIES } from '../lib/constants.js'
 import { daysUntil } from '../lib/dates.js'
-import { PlusIcon, SearchIcon, TableIcon, DashboardIcon } from '../components/ui/Icons.jsx'
+import { PlusIcon, SearchIcon, TableIcon, DashboardIcon, BuildingIcon } from '../components/ui/Icons.jsx'
 
 const SORTS = {
   deadline: { label: 'Deadline (soonest)', fn: (a, b) => (daysUntil(a.applicationDeadline) ?? 1e9) - (daysUntil(b.applicationDeadline) ?? 1e9) },
@@ -36,7 +37,8 @@ export default function Applications() {
       if (filters.priority !== ALL && a.priority !== filters.priority) return false
       return true
     })
-    // Kanban keeps its own column order; only the table list is globally sorted.
+    // Kanban keeps its own column order; company groups sort within each
+    // company by stage. Only the table list is globally sorted.
     if (view === 'table') list = [...list].sort(SORTS[sort].fn)
     return list
   }, [state.applications, search, filters, sort, view])
@@ -64,6 +66,7 @@ export default function Applications() {
           <div className="inline-flex rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800">
             <ViewToggle active={view === 'table'} onClick={() => setView('table')} icon={<TableIcon className="h-4 w-4" />} label="Table" />
             <ViewToggle active={view === 'kanban'} onClick={() => setView('kanban')} icon={<DashboardIcon className="h-4 w-4" />} label="Kanban" />
+            <ViewToggle active={view === 'company'} onClick={() => setView('company')} icon={<BuildingIcon className="h-4 w-4" />} label="Company" />
           </div>
           <span className="text-sm text-slate-500 dark:text-slate-400">
             {filtered.length} {filtered.length === 1 ? 'app' : 'apps'}
@@ -116,11 +119,9 @@ export default function Applications() {
         )}
       </div>
 
-      {view === 'table' ? (
-        <ApplicationsTable apps={filtered} onEdit={openEdit} onQuickAdd={addApplication} />
-      ) : (
-        <Kanban apps={filtered} onEdit={openEdit} />
-      )}
+      {view === 'table' && <ApplicationsTable apps={filtered} onEdit={openEdit} onQuickAdd={addApplication} />}
+      {view === 'kanban' && <Kanban apps={filtered} onEdit={openEdit} />}
+      {view === 'company' && <CompanyGroups apps={filtered} onEdit={openEdit} />}
 
       <ApplicationForm open={formOpen} application={editing} onClose={() => setFormOpen(false)} onSave={onSave} />
     </div>

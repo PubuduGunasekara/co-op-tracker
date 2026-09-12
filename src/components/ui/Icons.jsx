@@ -30,3 +30,5 @@ export const ExternalIcon = svg(<><path d="M14 4h6v6M20 4l-9 9" /><path d="M18 1
 export const CheckIcon = svg(<><path d="M5 13l4 4L19 7" /></>)
 export const ChevronUpDownIcon = svg(<><path d="m8 9 4-4 4 4M8 15l4 4 4-4" /></>)
 export const MenuIcon = svg(<><path d="M4 6h16M4 12h16M4 18h16" /></>)
+export const TrendingIcon = svg(<><path d="M3 17l6-6 4 4 8-8" /><path d="M15 7h6v6" /></>)
+export const BuildingIcon = svg(<><rect x="4" y="2.5" width="16" height="19" rx="1" /><path d="M9 8h.01M9 12h.01M9 16h.01M15 8h.01M15 12h.01M15 16h.01" /></>)
