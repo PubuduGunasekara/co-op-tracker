@@ -9,6 +9,7 @@ import {
   STAGE_RESULTS,
 } from '../lib/constants.js'
 import { newApplication } from '../lib/seedData.js'
+import { fetchJobDetails, extractFromPastedContent } from '../lib/jobParser.js'
 
 // Reusable labeled field wrappers.
 function Text({ label, value, onChange, type = 'text', placeholder }) {
@@ -55,6 +56,87 @@ function Area({ label, value, onChange, placeholder }) {
   )
 }
 
+// Best-effort "fill from a job link" panel. Only ever patches the draft via
+// `onFill` — the fields it fills stay fully editable, nothing auto-submits.
+function JobLinkImport({ onFill }) {
+  const [link, setLink] = useState('')
+  const [status, setStatus] = useState('idle') // idle | loading | error | success
+  const [error, setError] = useState('')
+  const [pasteText, setPasteText] = useState('')
+
+  const runFetch = async () => {
+    setStatus('loading')
+    setError('')
+    try {
+      const result = await fetchJobDetails(link)
+      onFill(result)
+      setStatus('success')
+    } catch (e) {
+      setStatus('error')
+      setError(e.message)
+    }
+  }
+
+  const runParsePaste = () => {
+    onFill({ ...extractFromPastedContent(pasteText), portalLink: link.trim() || undefined })
+    setStatus('success')
+  }
+
+  return (
+    <section className="rounded-lg border border-dashed border-slate-300 p-3 dark:border-slate-700">
+      <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">
+        Fill from a job link (optional)
+      </h3>
+      <div className="flex gap-2">
+        <input
+          className="input flex-1"
+          type="url"
+          placeholder="Paste the job posting URL…"
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+        />
+        <button
+          type="button"
+          className="btn-secondary shrink-0"
+          onClick={runFetch}
+          disabled={!link.trim() || status === 'loading'}
+        >
+          {status === 'loading' ? 'Fetching…' : 'Fetch details'}
+        </button>
+      </div>
+      {status === 'success' && (
+        <p className="mt-2 text-xs text-green-600 dark:text-green-400">
+          Filled in below — double-check before saving.
+        </p>
+      )}
+      {status === 'error' && (
+        <div className="mt-2 space-y-2">
+          <p className="text-xs text-amber-600 dark:text-amber-400">{error}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Most sites block direct fetching from the browser. Instead, paste the job description
+            text — or the page's HTML source (right-click → View Page Source → select all → copy)
+            — and we'll pull out what we can:
+          </p>
+          <textarea
+            className="input min-h-[80px] resize-y text-xs"
+            placeholder="Paste job description text or page HTML here…"
+            value={pasteText}
+            onChange={(e) => setPasteText(e.target.value)}
+          />
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={runParsePaste}
+            disabled={!pasteText.trim()}
+          >
+            Parse pasted text
+          </button>
+        </div>
+      )}
+    </section>
+  )
+}
+
 // Add/edit modal for an application. When `application` is null, creates a new
 // one; otherwise edits in place. `onSave(id|null, patch)` is called on submit.
 export default function ApplicationForm({ open, application, onClose, onSave }) {
@@ -66,6 +148,16 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
 
   const set = (key) => (val) => setDraft((d) => ({ ...d, [key]: val }))
   const isEdit = !!application
+
+  const fillFromLink = (result) => {
+    setDraft((d) => ({
+      ...d,
+      company: result.company || d.company,
+      role: result.role || d.role,
+      jobDescription: result.jobDescription || d.jobDescription,
+      portalLink: result.portalLink || d.portalLink,
+    }))
+  }
 
   const submit = () => {
     if (!draft.company.trim()) return
@@ -90,6 +182,8 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
       }
     >
       <div className="space-y-5">
+        <JobLinkImport onFill={fillFromLink} />
+
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Text label="Company *" value={draft.company} onChange={set('company')} placeholder="e.g. Stripe" />
           <Text label="Role" value={draft.role} onChange={set('role')} />
@@ -129,6 +223,12 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
 
         <section className="space-y-4">
           <Area label="Next action" value={draft.nextAction} onChange={set('nextAction')} placeholder="What's the immediate next step?" />
+          <Area
+            label="Job description"
+            value={draft.jobDescription}
+            onChange={set('jobDescription')}
+            placeholder="Filled automatically from the link above, or paste it yourself"
+          />
           <Area label="Notes" value={draft.notes} onChange={set('notes')} />
         </section>
       </div>

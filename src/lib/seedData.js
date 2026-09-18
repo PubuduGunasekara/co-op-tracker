@@ -16,6 +16,7 @@ export function newApplication(overrides = {}) {
     cycleType: 'Summer Internship',
     source: 'Company portal',
     portalLink: '',
+    jobDescription: '',
     windowOpens: '',
     applicationDeadline: '',
     dateApplied: '',
