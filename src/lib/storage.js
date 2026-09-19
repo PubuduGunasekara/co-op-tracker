@@ -29,12 +29,19 @@ export function saveState(state) {
 }
 
 /**
- * Backfill dateApplied from statusHistory for applications that reached
- * "Applied" before that field was auto-set on status change (e.g. cards
- * moved via Kanban drag before this was tracked). Without this, those
- * entries sort/filter as if never applied.
+ * Keep dateApplied consistent with status:
+ *  - "Not Applied" should never carry a dateApplied (e.g. the user corrected
+ *    a mistaken status change back down) — clear it so a stale date can't be
+ *    resurrected and sort/filter as if still applied.
+ *  - Anything past "Not Applied" that's missing dateApplied (e.g. cards moved
+ *    via Kanban drag before that field was auto-set on status change) gets it
+ *    backfilled from statusHistory's "Applied" entry, so it isn't treated as
+ *    never applied.
  */
 function backfillDateApplied(app) {
+  if (app.status === 'Not Applied') {
+    return app.dateApplied ? { ...app, dateApplied: '' } : app
+  }
   if (app.dateApplied) return app
   const appliedEntry = (app.statusHistory || []).find((h) => h.status === 'Applied')
   if (!appliedEntry) return app
