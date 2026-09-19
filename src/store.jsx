@@ -81,6 +81,12 @@ export function AppProvider({ children }) {
             { status: patch.status, date: todayISO() },
           ]
           next.lastActivityDate = todayISO()
+          // Moving to "Applied" (e.g. dragging a Kanban card) should count as
+          // applying today unless a date was already recorded, so the date-
+          // applied sort/filter reflects reality without a separate manual step.
+          if (patch.status === 'Applied' && !next.dateApplied) {
+            next.dateApplied = todayISO()
+          }
         } else if (Object.keys(patch).length > 0) {
           next.lastActivityDate = todayISO()
         }

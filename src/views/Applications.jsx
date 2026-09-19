@@ -5,7 +5,7 @@ import Kanban from './Kanban.jsx'
 import CompanyGroups from './CompanyGroups.jsx'
 import ApplicationForm from '../components/ApplicationForm.jsx'
 import { TIERS, STATUSES, CYCLE_TYPES, SOURCES, PRIORITIES } from '../lib/constants.js'
-import { daysUntil, parseDate } from '../lib/dates.js'
+import { daysUntil, parseDate, todayISO } from '../lib/dates.js'
 import { PlusIcon, SearchIcon, TableIcon, DashboardIcon, BuildingIcon } from '../components/ui/Icons.jsx'
 
 // Missing dateApplied always sorts last, regardless of direction, since
@@ -43,6 +43,7 @@ export default function Applications() {
 
   const appliedFrom = parseDate(filters.appliedFrom)
   const appliedTo = parseDate(filters.appliedTo)
+  const isAppliedTodayActive = filters.appliedFrom === todayISO() && filters.appliedTo === todayISO()
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -138,6 +139,21 @@ export default function Applications() {
             onChange={(e) => setFilters((f) => ({ ...f, appliedTo: e.target.value }))}
           />
         </label>
+        <button
+          type="button"
+          className={`self-end rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ${
+            isAppliedTodayActive
+              ? 'border-indigo-500 bg-indigo-600 text-white'
+              : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+          }`}
+          onClick={() =>
+            setFilters((f) =>
+              isAppliedTodayActive ? { ...f, appliedFrom: '', appliedTo: '' } : { ...f, appliedFrom: todayISO(), appliedTo: todayISO() }
+            )
+          }
+        >
+          Applied today
+        </button>
         {view === 'table' && (
           <label className="block">
             <span className="label">Sort by</span>

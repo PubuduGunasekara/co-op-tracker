@@ -28,10 +28,23 @@ export function saveState(state) {
   }
 }
 
+/**
+ * Backfill dateApplied from statusHistory for applications that reached
+ * "Applied" before that field was auto-set on status change (e.g. cards
+ * moved via Kanban drag before this was tracked). Without this, those
+ * entries sort/filter as if never applied.
+ */
+function backfillDateApplied(app) {
+  if (app.dateApplied) return app
+  const appliedEntry = (app.statusHistory || []).find((h) => h.status === 'Applied')
+  if (!appliedEntry) return app
+  return { ...app, dateApplied: appliedEntry.date }
+}
+
 /** Ensure the three top-level collections always exist as arrays. */
 function normalize(data) {
   return {
-    applications: Array.isArray(data?.applications) ? data.applications : [],
+    applications: Array.isArray(data?.applications) ? data.applications.map(backfillDateApplied) : [],
     referrals: Array.isArray(data?.referrals) ? data.referrals : [],
     interviews: Array.isArray(data?.interviews) ? data.interviews : [],
   }
