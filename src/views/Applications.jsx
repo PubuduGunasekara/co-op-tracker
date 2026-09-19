@@ -8,23 +8,25 @@ import { TIERS, STATUSES, CYCLE_TYPES, SOURCES, PRIORITIES } from '../lib/consta
 import { daysUntil, parseDate } from '../lib/dates.js'
 import { PlusIcon, SearchIcon, TableIcon, DashboardIcon, BuildingIcon } from '../components/ui/Icons.jsx'
 
-// Missing dateApplied always sorts after any real date, regardless of
-// direction, since "not applied yet" isn't a point in time to rank.
-const byDateApplied = (a, b) => {
+// Missing dateApplied always sorts last, regardless of direction, since
+// "not applied yet" isn't a point in time to rank.
+const byDateApplied = (dir) => (a, b) => {
   const ta = parseDate(a.dateApplied)?.getTime()
   const tb = parseDate(b.dateApplied)?.getTime()
   if (ta == null && tb == null) return 0
   if (ta == null) return 1
   if (tb == null) return -1
-  return tb - ta
+  return dir * (tb - ta)
 }
 
 const SORTS = {
-  dateApplied: { label: 'Date applied (most recent first)', fn: byDateApplied },
+  dateApplied: { label: 'Date applied (most recent first)', fn: byDateApplied(1) },
+  dateAppliedOldest: { label: 'Date applied (oldest first)', fn: byDateApplied(-1) },
   deadline: { label: 'Deadline (soonest)', fn: (a, b) => (daysUntil(a.applicationDeadline) ?? 1e9) - (daysUntil(b.applicationDeadline) ?? 1e9) },
   window: { label: 'Window opens (soonest)', fn: (a, b) => (daysUntil(a.windowOpens) ?? 1e9) - (daysUntil(b.windowOpens) ?? 1e9) },
   priority: { label: 'Priority (high→low)', fn: (a, b) => ({ High: 0, Med: 1, Low: 2 }[a.priority] ?? 9) - ({ High: 0, Med: 1, Low: 2 }[b.priority] ?? 9) },
   company: { label: 'Company (A→Z)', fn: (a, b) => a.company.localeCompare(b.company) },
+  companyDesc: { label: 'Company (Z→A)', fn: (a, b) => b.company.localeCompare(a.company) },
 }
 
 const ALL = '__all__'
