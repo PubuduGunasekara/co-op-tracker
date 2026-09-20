@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../store.jsx'
-import { TierTag, PriorityTag, UrgencyBadge } from '../components/ui/Badges.jsx'
+import { TierTag, PriorityTag, UrgencyBadge, AppliedBadge } from '../components/ui/Badges.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import { STATUSES, STATUS_STYLES } from '../lib/constants.js'
 import { formatDate } from '../lib/dates.js'
@@ -101,6 +101,11 @@ export default function Kanban({ apps, onEdit }) {
                     <TierTag tier={a.tier} />
                     <PriorityTag priority={a.priority} />
                   </div>
+                  {a.dateApplied && (
+                    <div className="mt-2">
+                      <AppliedBadge value={a.dateApplied} />
+                    </div>
+                  )}
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     <UrgencyBadge value={a.windowOpens} kind="opens" />
                     <UrgencyBadge value={a.applicationDeadline} kind="closes" />

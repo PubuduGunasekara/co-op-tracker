@@ -1,5 +1,5 @@
 import { STATUS_STYLES, TIER_STYLES, PRIORITY_STYLES } from '../../lib/constants.js'
-import { urgency } from '../../lib/dates.js'
+import { urgency, relativeApplied } from '../../lib/dates.js'
 
 // Status badge: always icon + label + color (never color alone).
 export function StatusPill({ status, className = '' }) {
@@ -44,6 +44,28 @@ export function UrgencyBadge({ value, kind = 'closes', className = '' }) {
     <span className={`pill ${URGENCY_STYLES[u.level]} ${className}`}>
       <span aria-hidden="true">{URGENCY_ICON[u.level]}</span>
       {u.label}
+    </span>
+  )
+}
+
+// "Applied X ago" badge — freshness fades from a vivid gradient (today) down
+// to muted grey (old), so recency reads at a glance without opening the card.
+const APPLIED_STYLES = {
+  today: 'bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 text-white ring-0 shadow-sm shadow-violet-500/40',
+  recent: 'bg-emerald-100 text-emerald-700 ring-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/40',
+  week: 'bg-sky-100 text-sky-700 ring-sky-300 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-500/40',
+  month: 'bg-amber-100 text-amber-700 ring-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/40',
+  old: 'bg-slate-100 text-slate-500 ring-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-600',
+}
+const APPLIED_ICON = { today: '🚀', recent: '📨', week: '🕓', month: '📅', old: '🗓️' }
+
+export function AppliedBadge({ value, className = '' }) {
+  const r = relativeApplied(value)
+  if (!r) return null
+  return (
+    <span className={`pill font-bold ${APPLIED_STYLES[r.level]} ${className}`}>
+      <span aria-hidden="true">{APPLIED_ICON[r.level]}</span>
+      {r.label}
     </span>
   )
 }

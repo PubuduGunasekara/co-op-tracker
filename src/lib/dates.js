@@ -64,6 +64,24 @@ export function urgency(value, kind = 'closes') {
   return { level, label, days }
 }
 
+/**
+ * Human, "how long ago did I apply" descriptor for dateApplied.
+ * Returns { label, level } where level buckets recency for styling:
+ * today | recent (this week) | week (this month) | month (this year) | old.
+ */
+export function relativeApplied(value) {
+  const days = daysUntil(value)
+  if (days === null) return null
+  const ago = -days
+
+  if (ago <= 0) return { label: 'Applied today', level: 'today' }
+  if (ago === 1) return { label: 'Applied yesterday', level: 'recent' }
+  if (ago < 7) return { label: `Applied ${ago}d ago`, level: 'recent' }
+  if (ago < 30) return { label: `Applied ${Math.round(ago / 7)}w ago`, level: 'week' }
+  if (ago < 365) return { label: `Applied ${Math.round(ago / 30)}mo ago`, level: 'month' }
+  return { label: `Applied ${Math.round(ago / 365)}y ago`, level: 'old' }
+}
+
 /** Format an ISO date as a short, readable label; pass free text through. */
 export function formatDate(value, opts = { month: 'short', day: 'numeric', year: 'numeric' }) {
   const d = parseDate(value)

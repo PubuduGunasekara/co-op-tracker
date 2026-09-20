@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../store.jsx'
-import { StatusPill, TierTag, PriorityTag, UrgencyBadge } from '../components/ui/Badges.jsx'
+import { StatusPill, TierTag, PriorityTag, UrgencyBadge, AppliedBadge } from '../components/ui/Badges.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import { STATUSES, TIERS, PRIORITIES } from '../lib/constants.js'
 import { formatDate } from '../lib/dates.js'
@@ -143,6 +143,7 @@ export default function ApplicationsTable({ apps, onEdit }) {
                 </td>
                 <td className={`${TD} min-w-[140px]`}>
                   <InlineText value={a.dateApplied} placeholder="Set date" type="date" onCommit={(v) => updateApplication(a.id, { dateApplied: v })} />
+                  {a.dateApplied && <AppliedBadge value={a.dateApplied} className="mt-1" />}
                 </td>
                 <td className={`${TD} min-w-[180px] max-w-[260px]`}>
                   <InlineText value={a.nextAction} placeholder="Add next action" onCommit={(v) => updateApplication(a.id, { nextAction: v })} />

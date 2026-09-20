@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../store.jsx'
-import { StatusPill, TierTag, PriorityTag } from '../components/ui/Badges.jsx'
+import { StatusPill, TierTag, PriorityTag, AppliedBadge } from '../components/ui/Badges.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
-import { formatDate } from '../lib/dates.js'
 import { EditIcon, TrashIcon, ExternalIcon, ChevronUpDownIcon } from '../components/ui/Icons.jsx'
 
 const STAGE_ORDER = ['Not Applied', 'Applied', 'OA', 'Phone Screen', 'Onsite', 'Offer', 'Rejected']
@@ -99,9 +98,11 @@ export default function CompanyGroups({ apps, onEdit }) {
                     <div className="flex shrink-0 items-center gap-2">
                       <StatusPill status={a.status} />
                       <PriorityTag priority={a.priority} />
-                      <span className="hidden text-xs text-slate-400 md:inline">
-                        {a.dateApplied ? `Applied ${formatDate(a.dateApplied)}` : a.cycleType}
-                      </span>
+                      {a.dateApplied ? (
+                        <AppliedBadge value={a.dateApplied} className="hidden md:inline-flex" />
+                      ) : (
+                        <span className="hidden text-xs text-slate-400 md:inline">{a.cycleType}</span>
+                      )}
                       <button className="btn-ghost p-1.5" onClick={() => onEdit(a)} aria-label={`Edit ${a.role || a.company}`}>
                         <EditIcon className="h-4 w-4" />
                       </button>
