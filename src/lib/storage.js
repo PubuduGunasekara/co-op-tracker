@@ -1,8 +1,13 @@
 import { seedData } from './seedData.js'
+import { normalizeResumeFields } from './resume.js'
 
+// localStorage key keeps its "-v1" suffix on purpose: renaming it would orphan
+// existing saved data. It is unrelated to the backup-file SCHEMA_VERSION below.
 const STORAGE_KEY = 'coop-tracker-data-v1'
 export const THEME_KEY = 'coop-tracker-theme'
-const SCHEMA_VERSION = 1
+// v2 adds resumeUsed / resumeVersion / resumeMatch to every application row.
+const SCHEMA_VERSION = 2
+const SUPPORTED_VERSIONS = [1, 2]
 
 /** Load persisted state, falling back to seed data on first run / corruption. */
 export function loadState() {
@@ -48,23 +53,59 @@ function backfillDateApplied(app) {
   return { ...app, dateApplied: appliedEntry.date }
 }
 
-/** Ensure the three top-level collections always exist as arrays. */
-function normalize(data) {
+/**
+ * Ensure the three top-level collections always exist as arrays and every
+ * application carries the three resume keys (null when absent/invalid).
+ * Unknown keys — on rows and at the top level of `data` — pass through, so an
+ * import followed by an export loses nothing.
+ */
+export function normalize(data, warn = console.warn) {
+  const extra = data && typeof data === 'object' && !Array.isArray(data) ? data : {}
   return {
-    applications: Array.isArray(data?.applications) ? data.applications.map(backfillDateApplied) : [],
+    ...extra,
+    applications: Array.isArray(data?.applications)
+      ? data.applications.map((a) => normalizeResumeFields(backfillDateApplied(a), warn))
+      : [],
     referrals: Array.isArray(data?.referrals) ? data.referrals : [],
     interviews: Array.isArray(data?.interviews) ? data.interviews : [],
   }
 }
 
-/** Trigger a download of the current state as a JSON backup file. */
-export function exportToFile(state) {
-  const payload = {
+/** The JSON envelope written to a backup file. */
+export function buildExportPayload(state, now = new Date()) {
+  return {
     schema: 'coop-tracker',
     version: SCHEMA_VERSION,
-    exportedAt: new Date().toISOString(),
+    exportedAt: now.toISOString(),
     data: normalize(state),
   }
+}
+
+/**
+ * Parse backup-file text (envelope or bare state object) into normalized
+ * state. Accepts schema versions 1 and 2; throws a friendly Error otherwise.
+ */
+export function parseBackupText(text, warn = console.warn) {
+  const parsed = JSON.parse(text)
+  if (
+    parsed &&
+    typeof parsed === 'object' &&
+    parsed.schema === 'coop-tracker' &&
+    parsed.version !== undefined &&
+    !SUPPORTED_VERSIONS.includes(parsed.version)
+  ) {
+    throw new Error(`Unsupported backup version ${JSON.stringify(parsed.version)} (supported: 1, 2).`)
+  }
+  const data = parsed?.data ?? parsed
+  if (!data || (!data.applications && !data.referrals && !data.interviews)) {
+    throw new Error('No Co-op Tracker data found in this file.')
+  }
+  return normalize(data, warn)
+}
+
+/** Trigger a download of the current state as a JSON backup file. */
+export function exportToFile(state) {
+  const payload = buildExportPayload(state)
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -87,12 +128,7 @@ export function importFromFile(file) {
     const reader = new FileReader()
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(reader.result)
-        const data = parsed?.data ?? parsed
-        if (!data || (!data.applications && !data.referrals && !data.interviews)) {
-          throw new Error('No Co-op Tracker data found in this file.')
-        }
-        resolve(normalize(data))
+        resolve(parseBackupText(reader.result))
       } catch (e) {
         reject(new Error(e.message || 'Could not read that file as JSON.'))
       }

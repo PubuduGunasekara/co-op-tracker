@@ -70,7 +70,25 @@ function InlineText({ value, onCommit, placeholder, type = 'text' }) {
 const TH = 'sticky top-0 z-10 whitespace-nowrap bg-slate-50 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:bg-slate-800/90 dark:text-slate-400'
 const TD = 'px-3 py-2.5 align-middle'
 
-export default function ApplicationsTable({ apps, onEdit }) {
+// Clickable column header. `keys` are the [first, second] sort keys it toggles between.
+function SortTh({ label, keys, sort, onSort }) {
+  const idx = keys.indexOf(sort)
+  const active = idx !== -1
+  const arrow = !active ? '↕' : idx === 0 ? '↑' : '↓'
+  return (
+    <th className={TH} aria-sort={!active ? 'none' : idx === 0 ? 'ascending' : 'descending'}>
+      <button
+        type="button"
+        className="inline-flex items-center gap-1 uppercase hover:text-slate-700 dark:hover:text-slate-200"
+        onClick={() => onSort(active && idx === 0 ? keys[1] : keys[0])}
+      >
+        {label} <span aria-hidden="true" className={active ? 'text-indigo-500' : 'opacity-50'}>{arrow}</span>
+      </button>
+    </th>
+  )
+}
+
+export default function ApplicationsTable({ apps, onEdit, sort, onSort }) {
   const { updateApplication, deleteApplication, addApplication, toast } = useApp()
   const [confirm, setConfirm] = useState(null)
   const [quick, setQuick] = useState({ company: '', tier: 'Tier 2' })
@@ -106,6 +124,8 @@ export default function ApplicationsTable({ apps, onEdit }) {
               <th className={TH}>Window opens</th>
               <th className={TH}>Deadline</th>
               <th className={TH}>Applied</th>
+              <SortTh label="Resume" keys={['resume', 'resumeDesc']} sort={sort} onSort={onSort} />
+              <SortTh label="Match" keys={['matchDesc', 'matchAsc']} sort={sort} onSort={onSort} />
               <th className={TH}>Next action</th>
               <th className={`${TH} text-right`}>Actions</th>
             </tr>
@@ -151,6 +171,19 @@ export default function ApplicationsTable({ apps, onEdit }) {
                   <InlineText value={a.dateApplied} placeholder="Set date" type="date" onCommit={(v) => updateApplication(a.id, { dateApplied: v })} />
                   {a.dateApplied && <AppliedBadge value={a.dateApplied} className="mt-1" />}
                 </td>
+                <td className={TD}>
+                  {a.resumeUsed || a.resumeVersion ? (
+                    <div>
+                      <div className="font-medium text-slate-700 dark:text-slate-200">{a.resumeUsed ?? '—'}</div>
+                      {a.resumeVersion && <div className="text-xs text-slate-400">{a.resumeVersion}</div>}
+                    </div>
+                  ) : (
+                    <span className="text-slate-400">—</span>
+                  )}
+                </td>
+                <td className={`${TD} tabular-nums`}>
+                  {a.resumeMatch != null ? `${a.resumeMatch}%` : <span className="text-slate-400">—</span>}
+                </td>
                 <td className={`${TD} min-w-[180px] max-w-[260px]`}>
                   <InlineText value={a.nextAction} placeholder="Add next action" onCommit={(v) => updateApplication(a.id, { nextAction: v })} />
                 </td>
@@ -179,6 +212,7 @@ export default function ApplicationsTable({ apps, onEdit }) {
                   onKeyDown={(e) => e.key === 'Enter' && commitQuickAdd()}
                 />
               </td>
+              <td className={TD} />
               <td className={TD}>
                 <select className="input px-2 py-1 text-sm" value={quick.tier} onChange={(e) => setQuick((q) => ({ ...q, tier: e.target.value }))}>
                   {TIERS.map((t) => (
@@ -186,7 +220,7 @@ export default function ApplicationsTable({ apps, onEdit }) {
                   ))}
                 </select>
               </td>
-              <td className={TD} colSpan={8}>
+              <td className={TD} colSpan={9}>
                 <span className="text-xs text-slate-400">Press Enter or click → to add a new application with default values.</span>
               </td>
               <td className={`${TD} text-right`}>

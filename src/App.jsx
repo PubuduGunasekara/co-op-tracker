@@ -4,6 +4,7 @@ import Dashboard from './views/Dashboard.jsx'
 import Applications from './views/Applications.jsx'
 import Calendar from './views/Calendar.jsx'
 import Timeline from './views/Timeline.jsx'
+import ResumeStats from './views/ResumeStats.jsx'
 import Referrals from './views/Referrals.jsx'
 import Interviews from './views/Interviews.jsx'
 import Toasts from './components/ui/Toasts.jsx'
@@ -20,12 +21,14 @@ import {
   MenuIcon,
   CloseIcon,
   TrendingIcon,
+  FileIcon,
 } from './components/ui/Icons.jsx'
 
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', Icon: DashboardIcon },
   { id: 'applications', label: 'Applications', Icon: TableIcon },
   { id: 'timeline', label: 'Timeline', Icon: TrendingIcon },
+  { id: 'resumes', label: 'Resumes', Icon: FileIcon },
   { id: 'calendar', label: 'Calendar', Icon: CalendarIcon },
   { id: 'referrals', label: 'Referrals', Icon: UsersIcon },
   { id: 'interviews', label: 'Interviews', Icon: ChatIcon },
@@ -88,6 +91,7 @@ export default function App() {
             {view === 'dashboard' && <Dashboard onNavigate={go} />}
             {view === 'applications' && <Applications />}
             {view === 'timeline' && <Timeline />}
+            {view === 'resumes' && <ResumeStats />}
             {view === 'calendar' && <Calendar />}
             {view === 'referrals' && <Referrals />}
             {view === 'interviews' && <Interviews />}

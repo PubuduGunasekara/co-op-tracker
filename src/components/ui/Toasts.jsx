@@ -8,6 +8,7 @@ export default function Toasts() {
     <div className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-full max-w-sm flex-col gap-2">
       {toasts.map((t) => {
         const isError = t.kind === 'error'
+        const isWarning = t.kind === 'warning'
         return (
           <div
             key={t.id}
@@ -15,6 +16,8 @@ export default function Toasts() {
             className={`pointer-events-auto flex animate-toast-in items-start gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ring-1 ${
               isError
                 ? 'bg-rose-600 text-white ring-rose-700'
+                : isWarning
+                ? 'bg-amber-500 text-slate-900 ring-amber-600'
                 : 'bg-slate-900 text-white ring-slate-700 dark:bg-slate-800'
             }`}
           >

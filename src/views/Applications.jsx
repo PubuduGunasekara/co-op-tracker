@@ -7,6 +7,7 @@ import ApplicationForm from '../components/ApplicationForm.jsx'
 import { TIERS, STATUSES, CYCLE_TYPES, SOURCES, PRIORITIES } from '../lib/constants.js'
 import { daysUntil, parseDate, todayISO } from '../lib/dates.js'
 import { distinctValues, formatLocation, norm } from '../lib/location.js'
+import { RESUME_OPTIONS, NOT_RECORDED, compareNullLast, needsResumeWarning } from '../lib/resume.js'
 import { PlusIcon, SearchIcon, TableIcon, DashboardIcon, BuildingIcon } from '../components/ui/Icons.jsx'
 
 // Missing dateApplied always sorts last, regardless of direction, since
@@ -28,13 +29,18 @@ const SORTS = {
   priority: { label: 'Priority (high→low)', fn: (a, b) => ({ High: 0, Med: 1, Low: 2 }[a.priority] ?? 9) - ({ High: 0, Med: 1, Low: 2 }[b.priority] ?? 9) },
   company: { label: 'Company (A→Z)', fn: (a, b) => a.company.localeCompare(b.company) },
   companyDesc: { label: 'Company (Z→A)', fn: (a, b) => b.company.localeCompare(a.company) },
+  // Rows with no resume / match always sort last, in either direction.
+  resume: { label: 'Resume (A→Z)', fn: (a, b) => compareNullLast(a.resumeUsed, b.resumeUsed, 1) },
+  resumeDesc: { label: 'Resume (Z→A)', fn: (a, b) => compareNullLast(a.resumeUsed, b.resumeUsed, -1) },
+  matchDesc: { label: 'Match (high→low)', fn: (a, b) => compareNullLast(a.resumeMatch, b.resumeMatch, -1) },
+  matchAsc: { label: 'Match (low→high)', fn: (a, b) => compareNullLast(a.resumeMatch, b.resumeMatch, 1) },
 }
 
 const ALL = '__all__'
-const DEFAULT_FILTERS = { tier: ALL, status: ALL, cycleType: ALL, source: ALL, priority: ALL, country: ALL, location: ALL, appliedFrom: '', appliedTo: '' }
+const DEFAULT_FILTERS = { tier: ALL, status: ALL, cycleType: ALL, source: ALL, priority: ALL, resumeUsed: ALL, country: ALL, location: ALL, appliedFrom: '', appliedTo: '' }
 
 export default function Applications() {
-  const { state, addApplication, updateApplication } = useApp()
+  const { state, addApplication, updateApplication, toast } = useApp()
   const [view, setView] = useState('table')
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
@@ -69,6 +75,10 @@ export default function Applications() {
       if (filters.cycleType !== ALL && a.cycleType !== filters.cycleType) return false
       if (filters.source !== ALL && a.source !== filters.source) return false
       if (filters.priority !== ALL && a.priority !== filters.priority) return false
+      if (filters.resumeUsed !== ALL) {
+        const match = filters.resumeUsed === NOT_RECORDED ? a.resumeUsed == null : a.resumeUsed === filters.resumeUsed
+        if (!match) return false
+      }
       if (appliedFrom || appliedTo) {
         const applied = parseDate(a.dateApplied)
         if (!applied) return false
@@ -94,6 +104,10 @@ export default function Applications() {
   const onSave = (id, draft) => {
     if (id) updateApplication(id, draft)
     else addApplication(draft)
+    // Soft warning: the save above has already gone through.
+    if (needsResumeWarning(draft)) {
+      toast(`Saved ${draft.company}, but no resume is recorded — resume stats will skip this row.`, 'warning')
+    }
   }
 
   const activeFilterCount =
@@ -140,6 +154,7 @@ export default function Applications() {
         <FilterSelect label="Cycle" value={filters.cycleType} onChange={(v) => setFilters((f) => ({ ...f, cycleType: v }))} options={CYCLE_TYPES} />
         <FilterSelect label="Source" value={filters.source} onChange={(v) => setFilters((f) => ({ ...f, source: v }))} options={SOURCES} />
         <FilterSelect label="Priority" value={filters.priority} onChange={(v) => setFilters((f) => ({ ...f, priority: v }))} options={PRIORITIES} />
+        <FilterSelect label="Resume" value={filters.resumeUsed} onChange={(v) => setFilters((f) => ({ ...f, resumeUsed: v }))} options={[...RESUME_OPTIONS, NOT_RECORDED]} />
         <FilterSelect label="Country" value={filters.country} onChange={(v) => setFilters((f) => ({ ...f, country: v, location: ALL }))} options={countryOptions} />
         <FilterSelect label="Location" value={filters.location} onChange={(v) => setFilters((f) => ({ ...f, location: v }))} options={locationOptions} />
         <label className="block">
@@ -201,7 +216,7 @@ export default function Applications() {
         </div>
       </div>
 
-      {view === 'table' && <ApplicationsTable apps={filtered} onEdit={openEdit} onQuickAdd={addApplication} />}
+      {view === 'table' && <ApplicationsTable apps={filtered} onEdit={openEdit} onQuickAdd={addApplication} sort={sort} onSort={setSort} />}
       {view === 'kanban' && <Kanban apps={filtered} onEdit={openEdit} />}
       {view === 'company' && <CompanyGroups apps={filtered} onEdit={openEdit} />}
 

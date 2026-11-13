@@ -10,14 +10,16 @@ import {
 } from '../lib/constants.js'
 import { newApplication } from '../lib/seedData.js'
 import { COUNTRY_SUGGESTIONS } from '../lib/location.js'
+import { RESUME_OPTIONS, coerceMatchInput, resumeFieldsFromDraft, needsResumeWarning } from '../lib/resume.js'
 import { fetchJobDetails, extractFromPastedContent } from '../lib/jobParser.js'
 
 // Reusable labeled field wrappers.
-function Text({ label, value, onChange, type = 'text', placeholder, list }) {
+function Text({ label, value, onChange, type = 'text', placeholder, list, inputProps }) {
   return (
     <label className="block">
       <span className="label">{label}</span>
       <input
+        {...inputProps}
         className="input"
         type={type}
         list={list}
@@ -163,9 +165,12 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
 
   const submit = () => {
     if (!draft.company.trim()) return
-    onSave(application ? application.id : null, draft)
+    onSave(application ? application.id : null, { ...draft, ...resumeFieldsFromDraft(draft) })
     onClose()
   }
+
+  // Soft hint only — never disables saving.
+  const showResumeHint = needsResumeWarning({ ...draft, ...resumeFieldsFromDraft(draft) })
 
   return (
     <Modal
@@ -211,6 +216,33 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
             <Text label="Application deadline" value={draft.applicationDeadline} onChange={set('applicationDeadline')} placeholder="2026-10-01 or text" />
             <Text label="Date applied" type="date" value={draft.dateApplied} onChange={set('dateApplied')} />
           </div>
+        </section>
+
+        <section>
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Resume (optional)</h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Select label="Resume used" value={draft.resumeUsed} onChange={set('resumeUsed')} options={['', ...RESUME_OPTIONS]} />
+            <Text label="Resume version" value={draft.resumeVersion} onChange={set('resumeVersion')} placeholder="e.g. v37" />
+            <Text
+              label="Keyword match (0–100)"
+              type="number"
+              value={draft.resumeMatch}
+              onChange={set('resumeMatch')}
+              placeholder="e.g. 72"
+              inputProps={{
+                min: 0,
+                max: 100,
+                step: 1,
+                onBlur: () => set('resumeMatch')(coerceMatchInput(draft.resumeMatch)),
+              }}
+            />
+          </div>
+          <p className="mt-1.5 text-xs text-slate-400">Match is a snapshot of the estimate when you applied — it is never recalculated.</p>
+          {showResumeHint && (
+            <p className="mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+              No resume recorded for an applied row. You can still save, but resume stats will skip it.
+            </p>
+          )}
         </section>
 
         <section>
