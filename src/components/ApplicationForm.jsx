@@ -9,16 +9,18 @@ import {
   STAGE_RESULTS,
 } from '../lib/constants.js'
 import { newApplication } from '../lib/seedData.js'
+import { COUNTRY_SUGGESTIONS } from '../lib/location.js'
 import { fetchJobDetails, extractFromPastedContent } from '../lib/jobParser.js'
 
 // Reusable labeled field wrappers.
-function Text({ label, value, onChange, type = 'text', placeholder }) {
+function Text({ label, value, onChange, type = 'text', placeholder, list }) {
   return (
     <label className="block">
       <span className="label">{label}</span>
       <input
         className="input"
         type={type}
+        list={list}
         value={value ?? ''}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
@@ -187,6 +189,13 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Text label="Company *" value={draft.company} onChange={set('company')} placeholder="e.g. Stripe" />
           <Text label="Role" value={draft.role} onChange={set('role')} />
+          <Text label="Country" value={draft.country} onChange={set('country')} placeholder="e.g. Canada" list="country-suggestions" />
+          <Text label="Location" value={draft.location} onChange={set('location')} placeholder="City / region, or Remote" />
+          <datalist id="country-suggestions">
+            {COUNTRY_SUGGESTIONS.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
           <Select label="Tier" value={draft.tier} onChange={set('tier')} options={TIERS} />
           <Select label="Priority" value={draft.priority} onChange={set('priority')} options={PRIORITIES} />
           <Select label="Cycle type" value={draft.cycleType} onChange={set('cycleType')} options={CYCLE_TYPES} />

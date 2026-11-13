@@ -6,6 +6,7 @@ import CompanyGroups from './CompanyGroups.jsx'
 import ApplicationForm from '../components/ApplicationForm.jsx'
 import { TIERS, STATUSES, CYCLE_TYPES, SOURCES, PRIORITIES } from '../lib/constants.js'
 import { daysUntil, parseDate, todayISO } from '../lib/dates.js'
+import { distinctValues, formatLocation, norm } from '../lib/location.js'
 import { PlusIcon, SearchIcon, TableIcon, DashboardIcon, BuildingIcon } from '../components/ui/Icons.jsx'
 
 // Missing dateApplied always sorts last, regardless of direction, since
@@ -30,7 +31,7 @@ const SORTS = {
 }
 
 const ALL = '__all__'
-const DEFAULT_FILTERS = { tier: ALL, status: ALL, cycleType: ALL, source: ALL, priority: ALL, appliedFrom: '', appliedTo: '' }
+const DEFAULT_FILTERS = { tier: ALL, status: ALL, cycleType: ALL, source: ALL, priority: ALL, country: ALL, location: ALL, appliedFrom: '', appliedTo: '' }
 
 export default function Applications() {
   const { state, addApplication, updateApplication } = useApp()
@@ -45,10 +46,24 @@ export default function Applications() {
   const appliedTo = parseDate(filters.appliedTo)
   const isAppliedTodayActive = filters.appliedFrom === todayISO() && filters.appliedTo === todayISO()
 
+  // Filter options come from the data itself; locations narrow to the chosen country.
+  const countryOptions = useMemo(() => distinctValues(state.applications.map((a) => a.country)), [state.applications])
+  const locationOptions = useMemo(
+    () =>
+      distinctValues(
+        state.applications
+          .filter((a) => filters.country === ALL || norm(a.country) === norm(filters.country))
+          .map((a) => a.location)
+      ),
+    [state.applications, filters.country]
+  )
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     let list = state.applications.filter((a) => {
-      if (q && !a.company.toLowerCase().includes(q) && !a.role.toLowerCase().includes(q)) return false
+      if (q && !a.company.toLowerCase().includes(q) && !a.role.toLowerCase().includes(q) && !formatLocation(a).toLowerCase().includes(q)) return false
+      if (filters.country !== ALL && norm(a.country) !== norm(filters.country)) return false
+      if (filters.location !== ALL && norm(a.location) !== norm(filters.location)) return false
       if (filters.tier !== ALL && a.tier !== filters.tier) return false
       if (filters.status !== ALL && a.status !== filters.status) return false
       if (filters.cycleType !== ALL && a.cycleType !== filters.cycleType) return false
@@ -106,21 +121,27 @@ export default function Applications() {
       </div>
 
       {/* Filter bar */}
-      <div className="card flex flex-col gap-3 p-3 lg:flex-row lg:flex-wrap lg:items-end">
-        <label className="relative flex-1 lg:max-w-xs">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <div className="card space-y-3 p-3">
+        {/* Search gets its own full-width row so adding filters can never squeeze it. */}
+        <label className="relative block">
+          <span className="sr-only">Search applications</span>
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
           <input
-            className="input pl-9"
-            placeholder="Search company or role…"
+            type="search"
+            className="input py-2.5 pl-10 text-base"
+            placeholder="Search by company, role or location…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
+        <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
         <FilterSelect label="Tier" value={filters.tier} onChange={(v) => setFilters((f) => ({ ...f, tier: v }))} options={TIERS} />
         <FilterSelect label="Status" value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v }))} options={STATUSES} />
         <FilterSelect label="Cycle" value={filters.cycleType} onChange={(v) => setFilters((f) => ({ ...f, cycleType: v }))} options={CYCLE_TYPES} />
         <FilterSelect label="Source" value={filters.source} onChange={(v) => setFilters((f) => ({ ...f, source: v }))} options={SOURCES} />
         <FilterSelect label="Priority" value={filters.priority} onChange={(v) => setFilters((f) => ({ ...f, priority: v }))} options={PRIORITIES} />
+        <FilterSelect label="Country" value={filters.country} onChange={(v) => setFilters((f) => ({ ...f, country: v, location: ALL }))} options={countryOptions} />
+        <FilterSelect label="Location" value={filters.location} onChange={(v) => setFilters((f) => ({ ...f, location: v }))} options={locationOptions} />
         <label className="block">
           <span className="label">Applied from</span>
           <input
@@ -177,6 +198,7 @@ export default function Applications() {
             Clear filters
           </button>
         )}
+        </div>
       </div>
 
       {view === 'table' && <ApplicationsTable apps={filtered} onEdit={openEdit} onQuickAdd={addApplication} />}

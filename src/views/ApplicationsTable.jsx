@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../store.jsx'
-import { StatusPill, TierTag, PriorityTag, UrgencyBadge, AppliedBadge } from '../components/ui/Badges.jsx'
+import { StatusPill, TierTag, PriorityTag, UrgencyBadge, AppliedBadge, LocationTag } from '../components/ui/Badges.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import { STATUSES, TIERS, PRIORITIES } from '../lib/constants.js'
 import { formatDate } from '../lib/dates.js'
@@ -98,6 +98,7 @@ export default function ApplicationsTable({ apps, onEdit }) {
           <thead>
             <tr>
               <th className={TH}>Company</th>
+              <th className={TH}>Location</th>
               <th className={TH}>Tier</th>
               <th className={TH}>Status</th>
               <th className={TH}>Priority</th>
@@ -122,6 +123,11 @@ export default function ApplicationsTable({ apps, onEdit }) {
                     )}
                   </div>
                   <div className="text-xs text-slate-400">{a.role}</div>
+                </td>
+                <td className={TD}>
+                  <div className="w-40">
+                    {a.country || a.location ? <LocationTag app={a} wrap /> : <span className="text-slate-400">—</span>}
+                  </div>
                 </td>
                 <td className={TD}>
                   <InlineSelect value={a.tier} options={TIERS} onChange={(v) => updateApplication(a.id, { tier: v })} render={(v) => <TierTag tier={v} />} />
@@ -180,7 +186,7 @@ export default function ApplicationsTable({ apps, onEdit }) {
                   ))}
                 </select>
               </td>
-              <td className={TD} colSpan={7}>
+              <td className={TD} colSpan={8}>
                 <span className="text-xs text-slate-400">Press Enter or click → to add a new application with default values.</span>
               </td>
               <td className={`${TD} text-right`}>

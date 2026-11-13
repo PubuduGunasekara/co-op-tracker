@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useApp } from '../store.jsx'
-import { StatusPill, TierTag, PriorityTag, AppliedBadge } from '../components/ui/Badges.jsx'
+import { StatusPill, TierTag, PriorityTag, AppliedBadge, LocationTag } from '../components/ui/Badges.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import { EditIcon, TrashIcon, ExternalIcon, ChevronUpDownIcon } from '../components/ui/Icons.jsx'
 
@@ -89,6 +89,7 @@ export default function CompanyGroups({ apps, onEdit }) {
                     <div className="flex min-w-0 items-center gap-2">
                       <TierTag tier={a.tier} />
                       <span className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{a.role || 'Role TBD'}</span>
+                      <LocationTag app={a} className="hidden sm:inline-flex" />
                       {a.portalLink && (
                         <a href={a.portalLink} target="_blank" rel="noreferrer" className="shrink-0 text-slate-400 hover:text-indigo-600" aria-label={`Open ${a.company} portal`}>
                           <ExternalIcon className="h-3.5 w-3.5" />

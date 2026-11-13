@@ -1,5 +1,7 @@
 import { STATUS_STYLES, TIER_STYLES, PRIORITY_STYLES } from '../../lib/constants.js'
 import { urgency, relativeApplied } from '../../lib/dates.js'
+import { formatLocation } from '../../lib/location.js'
+import { PinIcon } from './Icons.jsx'
 
 // Status badge: always icon + label + color (never color alone).
 export function StatusPill({ status, className = '' }) {
@@ -24,6 +26,18 @@ export function PriorityTag({ priority, className = '' }) {
     <span className={`pill ${p.tag} ${className}`}>
       <span aria-hidden="true">{p.icon}</span>
       {p.label}
+    </span>
+  )
+}
+
+// "📍 Toronto, Canada" — renders nothing when the application has no location.
+export function LocationTag({ app, wrap = false, className = '' }) {
+  const text = formatLocation(app)
+  if (!text) return null
+  return (
+    <span className={`inline-flex min-w-0 items-center gap-1 text-xs text-slate-500 dark:text-slate-400 ${className}`}>
+      <PinIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+      <span className={wrap ? 'break-words' : 'truncate'}>{text}</span>
     </span>
   )
 }
