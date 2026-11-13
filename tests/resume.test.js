@@ -86,7 +86,7 @@ test('invalid values become null, the original is reported, and "NOT RECORDED" i
     v1Row({ id: 'm3', resumeMatch: 72.5 }),
     v1Row({ id: 'm4', resumeMatch: 'NOT RECORDED' }),
     v1Row({ id: 'm5', resumeMatch: '72' }),
-    v1Row({ id: 'u1', resumeUsed: 'Frontend' }),
+    v1Row({ id: 'u1', resumeUsed: 'Frontend' }), // free text: valid now
     v1Row({ id: 'u2', resumeUsed: 42 }),
     v1Row({ id: 'v1', resumeVersion: 37 }),
     v1Row({ id: 'ok', resumeUsed: 'AI/ML', resumeVersion: ' v9 ', resumeMatch: 0 }),
@@ -96,7 +96,7 @@ test('invalid values become null, the original is reported, and "NOT RECORDED" i
   const by = Object.fromEntries(state.applications.map((a) => [a.id, a]))
 
   for (const id of ['m1', 'm2', 'm3', 'm4', 'm5']) assert.equal(by[id].resumeMatch, null, id)
-  assert.equal(by.u1.resumeUsed, null)
+  assert.equal(by.u1.resumeUsed, 'Frontend', 'any non-blank string is a valid resume name')
   assert.equal(by.u2.resumeUsed, null)
   assert.equal(by.v1.resumeVersion, null)
   assert.deepEqual([by.ok.resumeUsed, by.ok.resumeVersion, by.ok.resumeMatch], ['AI/ML', 'v9', 0])
@@ -105,8 +105,8 @@ test('invalid values become null, the original is reported, and "NOT RECORDED" i
   const reported = Object.fromEntries(warnings.map((w) => [w.id, w.original]))
   assert.equal(reported.m1, 150)
   assert.equal(reported.m4, 'NOT RECORDED')
-  assert.equal(reported.u1, 'Frontend')
-  assert.equal(warnings.length, 8, 'only the 8 invalid values warn; blanks and valid values do not')
+  assert.equal(reported.u2, 42)
+  assert.equal(warnings.length, 7, 'only the 7 invalid values warn; blanks and valid values do not')
 })
 
 test('form input is clamped to 0-100 integers, blank stays null', () => {
@@ -168,15 +168,15 @@ test('response rates, denominators and exclusion counts', () => {
 
   assert.equal(s.totalApplied, 8)
   assert.deepEqual(
-    ['Backend', 'AI/ML', 'General', 'Mobile', 'Other'].map((l) => {
+    ['Backend', 'AI/ML', 'General', 'Mobile'].map((l) => {
       const g = byLabel(s.byResume, l)
       return [g.applied, g.responses]
     }),
-    [[3, 2], [2, 1], [1, 1], [1, 0], [0, 0]]
+    [[3, 2], [2, 1], [1, 1], [1, 0]]
   )
+  assert.deepEqual(s.byResume.map((g) => g.label), ['Backend', 'AI/ML', 'General', 'Mobile'], 'only values present in the data, biggest first')
   assert.equal(byLabel(s.byResume, 'Backend').rate, 2 / 3)
   assert.equal(byLabel(s.byResume, 'Mobile').rate, 0)
-  assert.equal(byLabel(s.byResume, 'Other').rate, null, 'empty group has no rate, not 0%')
   assert.equal(s.excludedResume, 1)
 
   assert.deepEqual(
@@ -195,10 +195,26 @@ test('response rates, denominators and exclusion counts', () => {
   assert.ok(s.byResume.every((g) => g.smallSample), 'all groups here are under 30')
 })
 
+test('resume names are open text: any value is kept and grouped case-insensitively', () => {
+  const rows = [
+    v1Row({ id: 'x1', resumeUsed: 'Data Science v2' }),
+    v1Row({ id: 'x2', resumeUsed: '  data science v2 ', oaDate: '2026-09-10' }),
+    v1Row({ id: 'x3', resumeUsed: 'Embedded / Firmware' }),
+  ]
+  const state = normalize({ applications: rows }, silent)
+  assert.deepEqual(state.applications.map((a) => a.resumeUsed), ['Data Science v2', 'data science v2', 'Embedded / Firmware'])
+  assert.deepEqual(resumeFieldsFromDraft({ resumeUsed: '  Quant  ' }).resumeUsed, 'Quant')
+  const s = computeResumeStats(state.applications)
+  assert.deepEqual(s.byResume.map((g) => [g.label, g.applied, g.responses]), [
+    ['Data Science v2', 2, 1],
+    ['Embedded / Firmware', 1, 0],
+  ])
+})
+
 test('small-sample flag turns off at exactly 30 applications', () => {
   const mk = (n) =>
     Array.from({ length: n }, () => ({ dateApplied: '2026-09-01', resumeUsed: 'Backend', resumeMatch: 50 }))
   assert.equal(SMALL_SAMPLE_N, 30)
-  assert.equal(computeResumeStats(mk(29)).byResume[2].smallSample, true)
-  assert.equal(computeResumeStats(mk(30)).byResume[2].smallSample, false)
+  assert.equal(computeResumeStats(mk(29)).byResume[0].smallSample, true)
+  assert.equal(computeResumeStats(mk(30)).byResume[0].smallSample, false)
 })

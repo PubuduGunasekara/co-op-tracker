@@ -2,8 +2,10 @@
 // Pure functions only (no DOM/React) so they can be tested with `node --test`.
 
 import { STATUSES } from './constants.js'
+import { norm } from './location.js'
 
-export const RESUME_OPTIONS = ['General', 'AI/ML', 'Backend', 'Mobile', 'Other']
+// resumeUsed is free text (whatever the JSON backup or the form supplies);
+// there is deliberately no fixed list of resume types.
 // Filter-only label for rows with no resumeUsed; never stored on a row.
 export const NOT_RECORDED = 'Not recorded'
 
@@ -20,9 +22,10 @@ const isBlank = (v) => v === undefined || v === null || (typeof v === 'string' &
 
 /**
  * Coerce the three resume fields on an application to their strict types.
- * Blank -> null silently. Anything else invalid (wrong enum value, non-integer
- * or out-of-range match, a string where a number belongs such as
- * "NOT RECORDED") -> null, with the original value reported via `warn` so it
+ * Blank -> null silently. resumeUsed / resumeVersion are free text: any
+ * non-blank string is kept (trimmed). Anything else invalid (a non-string
+ * resume name, a non-integer or out-of-range match, a string where a number
+ * belongs such as "NOT RECORDED") -> null, with the original value reported via `warn` so it
  * is never silently destroyed. Every other key on the row is left untouched.
  */
 export function normalizeResumeFields(app, warn = console.warn) {
@@ -36,9 +39,8 @@ export function normalizeResumeFields(app, warn = console.warn) {
     })
 
   if (isBlank(app.resumeUsed)) out.resumeUsed = null
-  else if (typeof app.resumeUsed === 'string' && RESUME_OPTIONS.includes(app.resumeUsed.trim())) {
-    out.resumeUsed = app.resumeUsed.trim()
-  } else {
+  else if (typeof app.resumeUsed === 'string') out.resumeUsed = app.resumeUsed.trim()
+  else {
     report('resumeUsed', app.resumeUsed)
     out.resumeUsed = null
   }
@@ -72,7 +74,7 @@ export function coerceMatchInput(raw) {
 /** The three resume fields from a form draft, in storage form. */
 export function resumeFieldsFromDraft(draft) {
   return {
-    resumeUsed: RESUME_OPTIONS.includes(draft.resumeUsed) ? draft.resumeUsed : null,
+    resumeUsed: isBlank(draft.resumeUsed) ? null : String(draft.resumeUsed).trim(),
     resumeVersion: isBlank(draft.resumeVersion) ? null : String(draft.resumeVersion).trim(),
     resumeMatch: coerceMatchInput(draft.resumeMatch),
   }
@@ -122,6 +124,23 @@ function summarize(label, rows) {
 }
 
 /**
+ * One group per distinct resumeUsed value found in the data (trimmed,
+ * case-insensitive; first-seen casing is the label). Biggest group first.
+ */
+function resumeGroups(applied) {
+  const groups = new Map()
+  for (const a of applied) {
+    if (a.resumeUsed == null) continue
+    const key = norm(a.resumeUsed)
+    if (!groups.has(key)) groups.set(key, { label: a.resumeUsed, rows: [] })
+    groups.get(key).rows.push(a)
+  }
+  return [...groups.values()]
+    .map((g) => summarize(g.label, g.rows))
+    .sort((a, b) => b.applied - a.applied || a.label.localeCompare(b.label))
+}
+
+/**
  * Response stats over rows with a dateApplied (that set is both the "applied"
  * count and the rate denominator). Rows with a null grouping field are
  * excluded from that grouping and counted in `excludedResume` / `excludedMatch`.
@@ -130,9 +149,7 @@ export function computeResumeStats(apps) {
   const applied = apps.filter(isApplied)
   return {
     totalApplied: applied.length,
-    byResume: RESUME_OPTIONS.map((label) =>
-      summarize(label, applied.filter((a) => a.resumeUsed === label))
-    ),
+    byResume: resumeGroups(applied),
     excludedResume: applied.filter((a) => a.resumeUsed == null).length,
     byBand: MATCH_BANDS.map((b) =>
       summarize(b.label, applied.filter((a) => matchBand(a.resumeMatch) === b.key))

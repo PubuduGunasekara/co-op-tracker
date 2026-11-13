@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useApp } from '../store.jsx'
 import Modal from './ui/Modal.jsx'
 import {
   STATUSES,
@@ -9,8 +10,8 @@ import {
   STAGE_RESULTS,
 } from '../lib/constants.js'
 import { newApplication } from '../lib/seedData.js'
-import { COUNTRY_SUGGESTIONS } from '../lib/location.js'
-import { RESUME_OPTIONS, coerceMatchInput, resumeFieldsFromDraft, needsResumeWarning } from '../lib/resume.js'
+import { COUNTRY_SUGGESTIONS, distinctValues } from '../lib/location.js'
+import { coerceMatchInput, resumeFieldsFromDraft, needsResumeWarning } from '../lib/resume.js'
 import { fetchJobDetails, extractFromPastedContent } from '../lib/jobParser.js'
 
 // Reusable labeled field wrappers.
@@ -144,6 +145,12 @@ function JobLinkImport({ onFill }) {
 // Add/edit modal for an application. When `application` is null, creates a new
 // one; otherwise edits in place. `onSave(id|null, patch)` is called on submit.
 export default function ApplicationForm({ open, application, onClose, onSave }) {
+  const { state } = useApp()
+  // Suggestions only — the field stays open text, so any value is accepted.
+  const resumeSuggestions = useMemo(
+    () => distinctValues(state.applications.map((a) => a.resumeUsed)),
+    [state.applications]
+  )
   const [draft, setDraft] = useState(() => application || newApplication())
 
   useEffect(() => {
@@ -221,7 +228,13 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
         <section>
           <h3 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-400">Resume (optional)</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Select label="Resume used" value={draft.resumeUsed} onChange={set('resumeUsed')} options={['', ...RESUME_OPTIONS]} />
+            <Text
+              label="Resume used"
+              value={draft.resumeUsed}
+              onChange={set('resumeUsed')}
+              placeholder="e.g. Backend, AI/ML, or any name"
+              list="resume-suggestions"
+            />
             <Text label="Resume version" value={draft.resumeVersion} onChange={set('resumeVersion')} placeholder="e.g. v37" />
             <Text
               label="Keyword match (0–100)"
@@ -237,6 +250,11 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
               }}
             />
           </div>
+          <datalist id="resume-suggestions">
+            {resumeSuggestions.map((r) => (
+              <option key={r} value={r} />
+            ))}
+          </datalist>
           <p className="mt-1.5 text-xs text-slate-400">Match is a snapshot of the estimate when you applied — it is never recalculated.</p>
           {showResumeHint && (
             <p className="mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">

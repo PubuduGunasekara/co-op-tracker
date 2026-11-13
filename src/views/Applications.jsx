@@ -7,7 +7,7 @@ import ApplicationForm from '../components/ApplicationForm.jsx'
 import { TIERS, STATUSES, CYCLE_TYPES, SOURCES, PRIORITIES } from '../lib/constants.js'
 import { daysUntil, parseDate, todayISO } from '../lib/dates.js'
 import { distinctValues, formatLocation, norm } from '../lib/location.js'
-import { RESUME_OPTIONS, NOT_RECORDED, compareNullLast, needsResumeWarning } from '../lib/resume.js'
+import { NOT_RECORDED, compareNullLast, needsResumeWarning } from '../lib/resume.js'
 import { PlusIcon, SearchIcon, TableIcon, DashboardIcon, BuildingIcon } from '../components/ui/Icons.jsx'
 
 // Missing dateApplied always sorts last, regardless of direction, since
@@ -64,6 +64,8 @@ export default function Applications() {
     [state.applications, filters.country]
   )
 
+  const resumeOptions = useMemo(() => distinctValues(state.applications.map((a) => a.resumeUsed)), [state.applications])
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     let list = state.applications.filter((a) => {
@@ -76,7 +78,7 @@ export default function Applications() {
       if (filters.source !== ALL && a.source !== filters.source) return false
       if (filters.priority !== ALL && a.priority !== filters.priority) return false
       if (filters.resumeUsed !== ALL) {
-        const match = filters.resumeUsed === NOT_RECORDED ? a.resumeUsed == null : a.resumeUsed === filters.resumeUsed
+        const match = filters.resumeUsed === NOT_RECORDED ? a.resumeUsed == null : norm(a.resumeUsed) === norm(filters.resumeUsed)
         if (!match) return false
       }
       if (appliedFrom || appliedTo) {
@@ -154,7 +156,7 @@ export default function Applications() {
         <FilterSelect label="Cycle" value={filters.cycleType} onChange={(v) => setFilters((f) => ({ ...f, cycleType: v }))} options={CYCLE_TYPES} />
         <FilterSelect label="Source" value={filters.source} onChange={(v) => setFilters((f) => ({ ...f, source: v }))} options={SOURCES} />
         <FilterSelect label="Priority" value={filters.priority} onChange={(v) => setFilters((f) => ({ ...f, priority: v }))} options={PRIORITIES} />
-        <FilterSelect label="Resume" value={filters.resumeUsed} onChange={(v) => setFilters((f) => ({ ...f, resumeUsed: v }))} options={[...RESUME_OPTIONS, NOT_RECORDED]} />
+        <FilterSelect label="Resume" value={filters.resumeUsed} onChange={(v) => setFilters((f) => ({ ...f, resumeUsed: v }))} options={[...resumeOptions, NOT_RECORDED]} />
         <FilterSelect label="Country" value={filters.country} onChange={(v) => setFilters((f) => ({ ...f, country: v, location: ALL }))} options={countryOptions} />
         <FilterSelect label="Location" value={filters.location} onChange={(v) => setFilters((f) => ({ ...f, location: v }))} options={locationOptions} />
         <label className="block">
