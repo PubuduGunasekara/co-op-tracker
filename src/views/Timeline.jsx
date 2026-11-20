@@ -164,7 +164,7 @@ export default function Timeline() {
       <div className="card p-10 text-center">
         <TrendingIcon className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600" />
         <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">No applications logged yet.</p>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-slate-500">
           Set a <strong>Date applied</strong> on an application (in Table or the edit form) to start plotting your timeline.
         </p>
       </div>
@@ -198,7 +198,7 @@ export default function Timeline() {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200">Applications over time</h3>
-            <p className="text-xs text-slate-400">Click a bar to see which companies you applied to.</p>
+            <p className="text-xs text-slate-500">Click a bar to see which companies you applied to.</p>
           </div>
           <div className="inline-flex rounded-lg border border-slate-300 bg-white p-0.5 dark:border-slate-700 dark:bg-slate-800">
             {GRANULARITIES.map((g) => (
@@ -258,7 +258,7 @@ export default function Timeline() {
               const step = Math.max(1, Math.ceil(buckets.length / 12))
               const show = i % step === 0 || i === buckets.length - 1
               return (
-                <div key={b.key} className="flex-1 text-center text-[10px] font-medium text-slate-400">
+                <div key={b.key} className="flex-1 text-center text-[10px] font-medium text-slate-500">
                   {show ? tickLabel(b.key, granularity) : ''}
                 </div>
               )
@@ -273,11 +273,11 @@ export default function Timeline() {
           <h3 className="mb-3 text-sm font-bold text-slate-700 dark:text-slate-200">{bucketLabel(selected.key, granularity)}</h3>
           <ul className="space-y-2">
             {selected.items.map((a) => (
-              <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2 dark:border-slate-800">
+              <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-100 px-3 py-2 dark:border-white/[0.07]">
                 <div className="flex min-w-0 items-center gap-2">
                   <TierTag tier={a.tier} />
                   <span className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{a.company}</span>
-                  <span className="truncate text-xs text-slate-400">{a.role}</span>
+                  <span className="truncate text-xs text-slate-500">{a.role}</span>
                 </div>
                 <StatusPill status={a.status} />
               </li>

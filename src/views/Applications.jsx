@@ -24,6 +24,8 @@ const byDate = (field, dir) => (a, b) => {
 }
 
 export const SORTS = {
+  // List order is newest-added-first (new applications are prepended), so a no-op comparator keeps it.
+  added: { label: 'Newest added first', fn: () => 0 },
   dateApplied: { label: 'Date applied (newest)', fn: byDate('dateApplied', 1) },
   dateAppliedOldest: { label: 'Date applied (oldest)', fn: byDate('dateApplied', -1) },
   rejectionDate: { label: 'Rejection date (newest)', fn: byDate('rejectionDate', 1) },
@@ -88,8 +90,8 @@ export default function Applications({ view = 'board' }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
   const [quick, setQuick] = useState([])
   const [showFilters, setShowFilters] = useState(false)
-  const [sort, setSort] = useState('dateApplied')
-  const [boardSort, setBoardSort] = useState('smart')
+  const [sort, setSort] = useState('added')
+  const [boardSort, setBoardSort] = useState('newest')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const searchRef = useRef(null)
@@ -201,14 +203,14 @@ export default function Applications({ view = 'board' }) {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <div className="flex items-baseline gap-3">
           <h1 className="display hidden text-4xl leading-none text-slate-900 dark:text-slate-50 lg:block">{VIEW_TITLE[view]}</h1>
-          <span className="num text-xs text-slate-500 dark:text-slate-400" aria-live="polite">
+          <span className="num text-xs text-slate-600 dark:text-slate-400" aria-live="polite">
             {filtered.length === apps.length ? `${apps.length} applications` : `${filtered.length} of ${apps.length}`}
           </span>
         </div>
 
         <label className="relative order-last block min-w-[14rem] flex-1 basis-full sm:order-none sm:basis-auto">
           <span className="sr-only">Search applications</span>
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
             ref={searchRef}
             type="search"
@@ -218,17 +220,17 @@ export default function Applications({ view = 'board' }) {
             onChange={(e) => setSearch(e.target.value)}
           />
           {!search && (
-            <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-slate-300 px-1.5 font-mono text-[10px] text-slate-400 sm:block dark:border-slate-700">/</kbd>
+            <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded border border-slate-300 px-1.5 font-mono text-[10px] text-slate-500 sm:block dark:border-slate-700">/</kbd>
           )}
         </label>
 
         <button
-          className={`btn-secondary ${showFilters ? 'border-slate-900 dark:border-accent' : ''}`}
+          className={`btn-secondary ${showFilters ? 'border-brand-500 text-brand-600 dark:border-brand-400 dark:text-brand-300' : ''}`}
           onClick={() => setShowFilters((v) => !v)}
           aria-expanded={showFilters}
         >
           <FilterIcon className="h-4 w-4" /> Filters
-          {filterCount > 0 && <span className="num rounded-full bg-accent px-1.5 text-[11px] font-semibold text-slate-900">{filterCount}</span>}
+          {filterCount > 0 && <span className="num rounded-full bg-brand-500 px-1.5 text-[11px] font-semibold text-white">{filterCount}</span>}
         </button>
 
         {isBoard && (
@@ -262,6 +264,8 @@ export default function Applications({ view = 'board' }) {
         </button>
       </div>
 
+      {isBoard && <StatsStrip apps={apps} />}
+
       {/* Quick presets */}
       <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Quick filters">
         {QUICK.map((x) => {
@@ -273,7 +277,7 @@ export default function Applications({ view = 'board' }) {
               onClick={() => setQuick((q) => (on ? q.filter((i) => i !== x.id) : [...q, x.id]))}
               className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                 on
-                  ? 'border-slate-900 bg-slate-900 text-white dark:border-accent dark:bg-accent dark:text-slate-900'
+                  ? 'border-brand-500 bg-brand-500 text-white shadow-sm shadow-brand-500/30'
                   : 'border-slate-300 text-slate-600 hover:border-slate-500 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500'
               }`}
             >
@@ -282,7 +286,7 @@ export default function Applications({ view = 'board' }) {
           )
         })}
         {activeCount > 0 && (
-          <button className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-slate-500 underline-offset-2 hover:text-slate-900 hover:underline dark:hover:text-slate-100" onClick={clearAll}>
+          <button className="ml-1 inline-flex items-center gap-1 text-xs font-medium text-slate-600 underline-offset-2 hover:text-slate-900 hover:underline dark:hover:text-slate-100" onClick={clearAll}>
             <CloseIcon className="h-3 w-3" /> Clear all
           </button>
         )}
@@ -313,7 +317,7 @@ export default function Applications({ view = 'board' }) {
                 type="button"
                 className={`btn w-full border ${
                   isAppliedTodayActive
-                    ? 'border-slate-900 bg-slate-900 text-white dark:border-accent dark:bg-accent dark:text-slate-900'
+                    ? 'border-brand-500 bg-brand-500 text-white shadow-sm shadow-brand-500/30'
                     : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
                 }`}
                 onClick={() =>
@@ -339,7 +343,7 @@ export default function Applications({ view = 'board' }) {
                     title={s === NO_STAGE ? 'Rejected, stage not recorded' : s}
                     className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
                       on
-                        ? 'border-[#CC4B3C] bg-[#CC4B3C] text-white'
+                        ? 'border-[#E5484D] bg-[#E5484D] text-white'
                         : 'border-slate-300 text-slate-600 hover:border-slate-500 dark:border-slate-700 dark:text-slate-300'
                     }`}
                   >
@@ -359,6 +363,42 @@ export default function Applications({ view = 'board' }) {
       </div>
 
       <ApplicationForm open={formOpen} application={editing} onClose={() => setFormOpen(false)} onSave={onSave} />
+    </div>
+  )
+}
+
+// Live headline numbers above the board (always over ALL applications).
+function StatsStrip({ apps }) {
+  const count = (fn) => apps.filter(fn).length
+  const dueSoon = count((a) => {
+    const d = daysUntil(a.applicationDeadline)
+    return a.status === 'Not Applied' && d !== null && d >= 0 && d <= 7
+  })
+  const oaSoon = count((a) => upcomingEvents([a], todayISO(), 7).some((e) => e.kind === 'OA' && e.days >= 0))
+  const stats = [
+    { label: 'To apply', value: count((a) => a.status === 'Not Applied'), color: '#64748B' },
+    { label: 'Applied', value: count((a) => a.status === 'Applied'), color: '#3B82F6' },
+    { label: 'Interviewing', value: count((a) => ['OA', 'Phone Screen', 'Onsite'].includes(a.status)), color: '#8B5CF6' },
+    { label: 'Offers', value: count((a) => a.status === 'Offer'), color: '#10B981' },
+    { label: 'Rejected', value: count((a) => a.status === 'Rejected'), color: '#E5484D' },
+    { label: 'Deadlines ≤ 7d', value: dueSoon, color: '#F76B15', hot: dueSoon > 0 },
+    { label: 'OAs this week', value: oaSoon, color: '#8B5CF6', hot: oaSoon > 0 },
+  ]
+  return (
+    <div className="scroll-thin -mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5">
+      {stats.map((s) => (
+        <div
+          key={s.label}
+          className={`flex shrink-0 items-center gap-2.5 rounded-lg border bg-white px-3 py-2 shadow-card dark:bg-[#131720] ${
+            s.hot ? 'border-transparent' : 'border-slate-200/80 dark:border-white/[0.07]'
+          }`}
+          style={s.hot ? { boxShadow: `inset 0 0 0 1.5px ${s.color}` } : undefined}
+        >
+          <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} aria-hidden="true" />
+          <span className="text-[13px] font-medium text-slate-600 dark:text-slate-400">{s.label}</span>
+          <span className="num text-base font-bold text-slate-900 dark:text-white">{s.value}</span>
+        </div>
+      ))}
     </div>
   )
 }

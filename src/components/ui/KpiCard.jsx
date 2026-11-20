@@ -1,25 +1,29 @@
-// Headline number: quiet eyebrow label, large serif figure, optional hint.
-// `accent` is kept for call-site compatibility; it tints only a tiny marker.
+// Headline number tile: coloured marker, label, big bold figure, optional hint.
 const MARK = {
-  indigo: '#2F2D28',
-  blue: '#3D6FD9',
-  violet: '#8559D6',
-  amber: '#D48A0C',
-  green: '#2E9E50',
-  rose: '#CC4B3C',
-  teal: '#12968B',
+  indigo: '#4A63F7',
+  blue: '#3B82F6',
+  violet: '#8B5CF6',
+  amber: '#F59E0B',
+  green: '#10B981',
+  rose: '#E5484D',
+  teal: '#06B6D4',
 }
 
 export default function KpiCard({ label, value, hint, icon, accent = 'indigo', className = '' }) {
+  const c = MARK[accent] || MARK.indigo
   return (
-    <div className={`card relative p-4 ${className}`}>
+    <div className={`card relative overflow-hidden p-4 ${className}`}>
+      <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: c }} aria-hidden="true" />
       <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: MARK[accent] || MARK.indigo }} aria-hidden="true" />
-        <p className="eyebrow truncate">{label}</p>
-        {icon && <span className="ml-auto text-slate-400 [&>svg]:h-4 [&>svg]:w-4">{icon}</span>}
+        <p className="truncate text-[13px] font-medium text-slate-600 dark:text-slate-400">{label}</p>
+        {icon && (
+          <span className="ml-auto flex h-7 w-7 items-center justify-center rounded-md [&>svg]:h-4 [&>svg]:w-4" style={{ background: `color-mix(in oklab, ${c} 14%, transparent)`, color: c }}>
+            {icon}
+          </span>
+        )}
       </div>
-      <p className="display mt-2 text-[40px] leading-none tabular-nums text-slate-900 dark:text-slate-50">{value}</p>
-      {hint && <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{hint}</p>}
+      <p className="display mt-2 text-[30px] leading-none tabular-nums text-slate-900 dark:text-white">{value}</p>
+      {hint && <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400">{hint}</p>}
     </div>
   )
 }

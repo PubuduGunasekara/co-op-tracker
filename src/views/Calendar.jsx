@@ -21,7 +21,7 @@ export default function Calendar() {
         </div>
 
         {model.rows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-slate-400">
+          <p className="py-8 text-center text-sm text-slate-500">
             No dated windows or deadlines yet. Add ISO dates (YYYY-MM-DD) to plot them here.
           </p>
         ) : (
@@ -32,7 +32,7 @@ export default function Calendar() {
                 {model.months.map((mo) => (
                   <div
                     key={mo.key}
-                    className="absolute top-0 text-xs font-semibold text-slate-400"
+                    className="absolute top-0 text-xs font-semibold text-slate-500"
                     style={{ left: `${mo.left}%` }}
                   >
                     {mo.label}
@@ -85,7 +85,7 @@ export default function Calendar() {
       {model.estimates.length > 0 && (
         <div className="card p-5">
           <h3 className="mb-1 text-sm font-bold text-slate-700 dark:text-slate-200">Estimated windows (verify)</h3>
-          <p className="mb-3 text-xs text-slate-400">
+          <p className="mb-3 text-xs text-slate-500">
             These use text dates and aren't plotted above. Confirm on NUworks / each careers page and add an ISO date to chart them.
           </p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -95,7 +95,7 @@ export default function Calendar() {
                   <TierTag tier={a.tier} />
                   <span className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{a.company}</span>
                 </div>
-                <span className="shrink-0 text-xs text-slate-400">{a.windowOpens || a.applicationDeadline || '—'}</span>
+                <span className="shrink-0 text-xs text-slate-500">{a.windowOpens || a.applicationDeadline || '—'}</span>
               </div>
             ))}
           </div>
@@ -122,7 +122,7 @@ function Marker({ left, color, title }) {
 
 function Legend() {
   return (
-    <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+    <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400">
       <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-500" /> Window opens</span>
       <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-500" /> Deadline</span>
     </div>

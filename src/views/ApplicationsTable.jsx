@@ -66,13 +66,13 @@ function InlineText({ value, onCommit, placeholder, type = 'text' }) {
         setEditing(true)
       }}
     >
-      {value ? formatDate(value) : <span className="text-slate-400">{placeholder}</span>}
+      {value ? formatDate(value) : <span className="text-slate-500">{placeholder}</span>}
     </button>
   )
 }
 
 const TH =
-  'sticky top-0 z-10 whitespace-nowrap border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-left font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400'
+  'sticky top-0 z-10 whitespace-nowrap border-b border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600 dark:border-white/[0.07] dark:bg-[#131720] dark:text-slate-400'
 const TD = 'px-3 py-2.5 align-top'
 
 // Clickable column header. `keys` are the [first, second] sort keys it toggles between.
@@ -87,7 +87,7 @@ function SortTh({ label, keys, sort, onSort }) {
         className="inline-flex items-center gap-1 uppercase hover:text-slate-900 dark:hover:text-slate-100"
         onClick={() => onSort(active && idx === 0 ? keys[1] : keys[0])}
       >
-        {label} <span aria-hidden="true" className={active ? 'text-slate-900 dark:text-accent' : 'opacity-50'}>{arrow}</span>
+        {label} <span aria-hidden="true" className={active ? 'text-brand-500 dark:text-brand-300' : 'opacity-50'}>{arrow}</span>
       </button>
     </th>
   )
@@ -110,7 +110,7 @@ export default function ApplicationsTable({ apps, onEdit, sort, onSort }) {
     return (
       <div className="card p-10 text-center">
         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No applications match your filters.</p>
-        <p className="mt-1 text-sm text-slate-400">Adjust the filters above, or add a new application.</p>
+        <p className="mt-1 text-sm text-slate-500">Adjust the filters above, or add a new application.</p>
       </div>
     )
   }
@@ -137,7 +137,7 @@ export default function ApplicationsTable({ apps, onEdit, sort, onSort }) {
               <th className={`${TH} text-right`}>Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
             {apps.map((a) => {
               const oaEvent = upcomingEvents([a], today, 365).find((e) => e.kind === 'OA')
               return (
@@ -148,13 +148,13 @@ export default function ApplicationsTable({ apps, onEdit, sort, onSort }) {
                         {a.company}
                       </span>
                       {a.portalLink && (
-                        <a href={a.portalLink} target="_blank" rel="noreferrer" className="shrink-0 text-slate-400 hover:text-slate-900 dark:hover:text-slate-100" aria-label={`Open ${a.company} posting`}>
+                        <a href={a.portalLink} target="_blank" rel="noreferrer" className="shrink-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100" aria-label={`Open ${a.company} posting`}>
                           <ExternalIcon className="h-3.5 w-3.5" />
                         </a>
                       )}
                     </div>
                     {a.role && (
-                      <div className="line-clamp-2 break-words text-xs text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400" title={a.role}>
+                      <div className="line-clamp-2 break-words text-xs text-slate-600 [overflow-wrap:anywhere] dark:text-slate-400" title={a.role}>
                         {a.role}
                       </div>
                     )}
@@ -169,7 +169,7 @@ export default function ApplicationsTable({ apps, onEdit, sort, onSort }) {
                   <td className={TD}>
                     <InlineSelect value={a.priority} options={PRIORITIES} onChange={(v) => updateApplication(a.id, { priority: v })} render={(v) => <PriorityTag priority={v} />} />
                   </td>
-                  <td className={`${TD} min-w-[8.5rem] max-w-[10rem] text-xs text-slate-500 dark:text-slate-400`}>
+                  <td className={`${TD} min-w-[8.5rem] max-w-[10rem] text-xs text-slate-600 dark:text-slate-400`}>
                     <span className="line-clamp-2 break-words [overflow-wrap:anywhere]" title={a.cycleType}>
                       {a.cycleType || '—'}
                     </span>
@@ -194,7 +194,7 @@ export default function ApplicationsTable({ apps, onEdit, sort, onSort }) {
                     {a.status === 'Rejected' ? (
                       <>
                         <InlineText value={a.rejectionDate} placeholder="Set date" type="date" onCommit={(v) => updateApplication(a.id, { rejectionDate: v })} />
-                        <span className="mt-1 block max-w-[9rem] truncate text-xs text-slate-500 dark:text-slate-400" title={a.rejectionStage || 'Stage not set'}>
+                        <span className="mt-1 block max-w-[9rem] truncate text-xs text-slate-600 dark:text-slate-400" title={a.rejectionStage || 'Stage not set'}>
                           {a.rejectionStage || 'Stage not set'}
                         </span>
                       </>
@@ -208,7 +208,7 @@ export default function ApplicationsTable({ apps, onEdit, sort, onSort }) {
                         <div className="truncate font-medium text-slate-700 dark:text-slate-200" title={a.resumeUsed ?? ''}>
                           {a.resumeUsed ?? '—'}
                         </div>
-                        {a.resumeVersion && <div className="truncate text-xs text-slate-400">{a.resumeVersion}</div>}
+                        {a.resumeVersion && <div className="truncate text-xs text-slate-500">{a.resumeVersion}</div>}
                       </div>
                     ) : (
                       <span className="text-slate-300 dark:text-slate-600">—</span>
@@ -254,7 +254,7 @@ export default function ApplicationsTable({ apps, onEdit, sort, onSort }) {
                 </select>
               </td>
               <td className={TD} colSpan={10}>
-                <span className="text-xs text-slate-400">Press Enter to add a new application with default values.</span>
+                <span className="text-xs text-slate-500">Press Enter to add a new application with default values.</span>
               </td>
               <td className={`${TD} text-right`}>
                 <button className="btn-primary px-2.5 py-1.5 text-xs" onClick={commitQuickAdd} disabled={!quick.company.trim()}>

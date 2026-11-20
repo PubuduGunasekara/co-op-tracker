@@ -8,7 +8,7 @@ export const pct = (x, d = 0) => (x == null ? '—' : `${(x * 100).toFixed(d)}%`
 
 /** Horizontal bars: label, bar scaled to `max`, then the value text. */
 export function HBars({ rows, max, empty = 'Nothing to show yet.' }) {
-  if (!rows.length) return <p className="py-6 text-center text-xs text-slate-400">{empty}</p>
+  if (!rows.length) return <p className="py-6 text-center text-xs text-slate-500">{empty}</p>
   const top = max ?? Math.max(1, ...rows.map((r) => r.value))
   return (
     <ul className="space-y-2.5">
@@ -20,7 +20,7 @@ export function HBars({ rows, max, empty = 'Nothing to show yet.' }) {
           <div className="h-5 overflow-hidden rounded bg-slate-100 dark:bg-slate-800">
             <div
               className="h-full rounded transition-[width] duration-500"
-              style={{ width: `${Math.max(r.value ? 2 : 0, (r.value / top) * 100)}%`, background: r.color || '#5E5B50' }}
+              style={{ width: `${Math.max(r.value ? 2 : 0, (r.value / top) * 100)}%`, background: r.color || '#4A63F7' }}
             />
           </div>
           <span className="num w-28 text-right text-xs text-slate-600 dark:text-slate-300">{r.text ?? r.value}</span>
@@ -31,14 +31,14 @@ export function HBars({ rows, max, empty = 'Nothing to show yet.' }) {
 }
 
 /** Vertical columns with a hover/focus readout line. `data` = [{label, value}]. */
-export function Columns({ data, height = 140, color = '#5E5B50', unit = '', tickEvery = 4, formatLabel = (l) => l }) {
+export function Columns({ data, height = 140, color = '#4A63F7', unit = '', tickEvery = 4, formatLabel = (l) => l }) {
   const [hover, setHover] = useState(null)
   const max = Math.max(1, ...data.map((d) => d.value))
   const active = hover == null ? null : data[hover]
   const w = 100 / data.length
   return (
     <div>
-      <p className="num mb-2 h-4 text-xs text-slate-500 dark:text-slate-400" aria-live="polite">
+      <p className="num mb-2 h-4 text-xs text-slate-600 dark:text-slate-400" aria-live="polite">
         {active ? (
           <>
             <strong className="text-slate-900 dark:text-slate-50">{active.value}</strong> {unit} · {formatLabel(active.label)}
@@ -62,8 +62,8 @@ export function Columns({ data, height = 140, color = '#5E5B50', unit = '', tick
                 width={w * 0.72}
                 height={Math.max(h, d.value ? 1.5 : 0)}
                 rx="0.6"
-                fill={hover === i ? '#C6F24E' : color}
-                stroke={hover === i ? '#2F2D28' : 'none'}
+                fill={hover === i ? '#7584FB' : color}
+                stroke={hover === i ? '#1E293B' : 'none'}
                 strokeWidth="1"
                 vectorEffect="non-scaling-stroke"
               />
@@ -74,7 +74,7 @@ export function Columns({ data, height = 140, color = '#5E5B50', unit = '', tick
       </svg>
       <div className="mt-1 flex">
         {data.map((d, i) => (
-          <span key={d.label} className="num flex-1 truncate text-center text-[10px] text-slate-400" style={{ visibility: i % tickEvery === 0 ? 'visible' : 'hidden' }}>
+          <span key={d.label} className="num flex-1 truncate text-center text-[10px] text-slate-500" style={{ visibility: i % tickEvery === 0 ? 'visible' : 'hidden' }}>
             {formatLabel(d.label, true)}
           </span>
         ))}
@@ -118,7 +118,7 @@ export function Donut({ parts, centerLabel, centerValue }) {
           <li key={p.label} className="flex items-center gap-2 text-xs">
             <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: p.color }} />
             <span className="flex-1 truncate text-slate-700 dark:text-slate-200">{p.label}</span>
-            <span className="num text-slate-500 dark:text-slate-400">{p.value}</span>
+            <span className="num text-slate-600 dark:text-slate-400">{p.value}</span>
           </li>
         ))}
       </ul>
@@ -135,7 +135,7 @@ export function Heatmap({ cols, formatDay }) {
   const total = cols.flat().reduce((n, d) => n + d.count, 0)
   return (
     <div>
-      <p className="num mb-2 h-4 text-xs text-slate-500 dark:text-slate-400" aria-live="polite">
+      <p className="num mb-2 h-4 text-xs text-slate-600 dark:text-slate-400" aria-live="polite">
         {hover ? (
           <>
             <strong className="text-slate-900 dark:text-slate-50">{hover.count}</strong> applied · {formatDay(hover.iso)}
@@ -154,7 +154,7 @@ export function Heatmap({ cols, formatDay }) {
                   onMouseEnter={() => setHover(d)}
                   onMouseLeave={() => setHover(null)}
                   title={`${formatDay(d.iso)}: ${d.count}`}
-                  className={`aspect-square min-h-[12px] rounded-[3px] ${d.count === 0 ? 'bg-slate-200/70 dark:bg-slate-800' : 'bg-[#6F8F0E] dark:bg-accent'}`}
+                  className={`aspect-square min-h-[12px] rounded-[3px] ${d.count === 0 ? 'bg-slate-200/70 dark:bg-slate-800' : 'bg-[#4A63F7] dark:bg-accent'}`}
                   style={d.count ? { opacity: d.future ? 0.3 : OPAC[level(d.count)] } : d.future ? { opacity: 0.35 } : undefined}
                 />
               ))}
@@ -162,10 +162,10 @@ export function Heatmap({ cols, formatDay }) {
           ))}
         </div>
       </div>
-      <div className="mt-2 flex items-center justify-end gap-1.5 text-[10px] text-slate-400">
+      <div className="mt-2 flex items-center justify-end gap-1.5 text-[10px] text-slate-500">
         Fewer
         {OPAC.map((o, i) => (
-          <span key={i} className={`h-2.5 w-2.5 rounded-[2px] ${i === 0 ? 'bg-slate-200 dark:bg-slate-800' : 'bg-[#6F8F0E] dark:bg-accent'}`} style={i ? { opacity: o } : undefined} />
+          <span key={i} className={`h-2.5 w-2.5 rounded-[2px] ${i === 0 ? 'bg-slate-200 dark:bg-slate-800' : 'bg-[#4A63F7] dark:bg-accent'}`} style={i ? { opacity: o } : undefined} />
         ))}
         More
       </div>

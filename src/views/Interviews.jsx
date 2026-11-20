@@ -4,7 +4,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import { ROUND_TYPES, INTERVIEW_RESULTS } from '../lib/constants.js'
 import { PlusIcon, TrashIcon, ChatIcon } from '../components/ui/Icons.jsx'
 
-const TH = 'sticky top-0 z-10 whitespace-nowrap bg-slate-50 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:bg-slate-800/90 dark:text-slate-400'
+const TH = 'sticky top-0 z-10 whitespace-nowrap bg-slate-50 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-800/90 dark:text-slate-400'
 const TD = 'px-3 py-2 align-top'
 
 const RESULT_STYLE = {
@@ -67,7 +67,7 @@ export default function Interviews() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500 dark:text-slate-400">{interviews.length} logged interview{interviews.length === 1 ? '' : 's'}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">{interviews.length} logged interview{interviews.length === 1 ? '' : 's'}</p>
         <button className="btn-primary" onClick={() => { addInterview(); toast('Added interview row.') }}>
           <PlusIcon className="h-4 w-4" /> Log interview
         </button>
@@ -97,7 +97,7 @@ export default function Interviews() {
                   <th className={TH}></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
                 {interviews.map((i) => (
                   <tr key={i.id} className="group hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
                     <td className={`${TD} min-w-[130px]`}><Cell value={i.company} placeholder="Company" onCommit={(v) => updateInterview(i.id, { company: v })} /></td>
@@ -154,7 +154,7 @@ function EmptyState({ onAdd }) {
         <ChatIcon className="h-6 w-6" />
       </div>
       <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">No interviews logged yet</p>
-      <p className="mt-1 max-w-sm text-sm text-slate-400">Log each round with topics, a self-rating, and what to improve — your prep notes for next time.</p>
+      <p className="mt-1 max-w-sm text-sm text-slate-500">Log each round with topics, a self-rating, and what to improve — your prep notes for next time.</p>
       <button className="btn-primary mt-4" onClick={onAdd}><PlusIcon className="h-4 w-4" /> Log your first interview</button>
     </div>
   )

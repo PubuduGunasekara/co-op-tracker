@@ -93,7 +93,7 @@ export default function Dashboard({ onNavigate }) {
               const pct = Math.round((count / funnelMax) * 100)
               return (
                 <div key={stage} className="flex items-center gap-3">
-                  <div className="w-28 shrink-0 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">
+                  <div className="w-28 shrink-0 text-right text-xs font-semibold text-slate-600 dark:text-slate-400">
                     {stage}
                   </div>
                   <div className="h-7 flex-1 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
@@ -109,7 +109,7 @@ export default function Dashboard({ onNavigate }) {
             })}
           </div>
           {m.applied === 0 && (
-            <p className="mt-4 text-xs text-slate-400">Apply to a company to start building your funnel.</p>
+            <p className="mt-4 text-xs text-slate-500">Apply to a company to start building your funnel.</p>
           )}
         </div>
 
@@ -129,7 +129,7 @@ export default function Dashboard({ onNavigate }) {
             kind="opens"
             emptyHint="No windows opening in the next 30 days."
           />
-          <div className="my-4 border-t border-slate-100 dark:border-slate-800" />
+          <div className="my-4 border-t border-slate-100 dark:border-white/[0.07]" />
           <UpcomingList
             title="Deadlines (≤ 14 days)"
             items={m.closingSoon}
@@ -147,9 +147,9 @@ function UpcomingList({ title, items, field, kind, emptyHint }) {
   const sorted = [...items].sort((a, b) => (daysUntil(a[field]) ?? 1e9) - (daysUntil(b[field]) ?? 1e9))
   return (
     <div>
-      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{title}</h4>
+      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h4>
       {sorted.length === 0 ? (
-        <p className="text-xs text-slate-400">{emptyHint}</p>
+        <p className="text-xs text-slate-500">{emptyHint}</p>
       ) : (
         <ul className="space-y-2">
           {sorted.map((a) => (
@@ -157,7 +157,7 @@ function UpcomingList({ title, items, field, kind, emptyHint }) {
               <div className="flex min-w-0 items-center gap-2">
                 <TierTag tier={a.tier} />
                 <span className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{a.company}</span>
-                <span className="hidden text-xs text-slate-400 sm:inline">{formatDate(a[field])}</span>
+                <span className="hidden text-xs text-slate-500 sm:inline">{formatDate(a[field])}</span>
               </div>
               <UrgencyBadge value={a[field]} kind={kind} />
             </li>

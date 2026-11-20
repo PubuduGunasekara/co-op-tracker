@@ -27,20 +27,12 @@ export function RejectionBadge({ app, className = '' }) {
   return <StatusPill status="Rejected" app={app} className={className} />
 }
 
-// Tier: the top tiers are drawn solid, the rest quietly outlined.
+// Tier tag, colour-coded per tier. Unknown / blank tiers render quietly.
 export function TierTag({ tier, className = '' }) {
   const t = TIER_STYLES[tier]
-  const label = t?.label || tier || 'No tier'
-  const loud = t && t.rank <= 1
   return (
-    <span
-      className={`inline-flex shrink-0 items-center rounded-md px-1.5 py-[3px] font-mono text-[10.5px] font-medium uppercase leading-none tracking-wide ${
-        loud
-          ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-          : 'text-slate-500 ring-1 ring-inset ring-slate-300 dark:text-slate-400 dark:ring-slate-700'
-      } ${className}`}
-    >
-      {label}
+    <span className={`pill shrink-0 uppercase tracking-wide !text-[10.5px] ${className}`} style={tone(t?.color || '#94A3B8')}>
+      {t?.label || tier || 'No tier'}
     </span>
   )
 }
@@ -60,8 +52,8 @@ export function LocationTag({ app, wrap = false, className = '' }) {
   const text = formatLocation(app)
   if (!text) return null
   return (
-    <span className={`inline-flex min-w-0 max-w-full items-center gap-1 text-xs text-slate-500 dark:text-slate-400 ${className}`}>
-      <PinIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+    <span className={`inline-flex min-w-0 max-w-full items-center gap-1 text-xs text-slate-600 dark:text-slate-400 ${className}`}>
+      <PinIcon className="h-3.5 w-3.5 shrink-0 text-slate-500" />
       <span className={wrap ? 'break-words [overflow-wrap:anywhere]' : 'truncate'} title={text}>
         {text}
       </span>
@@ -71,7 +63,7 @@ export function LocationTag({ app, wrap = false, className = '' }) {
 
 // -- Dates that matter ------------------------------------------------------
 
-const TONE_COLOR = { late: '#CC4B3C', now: '#D4540C', soon: '#D48A0C', later: '#78746A' }
+const TONE_COLOR = { late: '#E5484D', now: '#F76B15', soon: '#F59E0B', later: '#64748B' }
 
 function whenLabel(kind, days) {
   if (days === 0) return 'today'
@@ -145,7 +137,7 @@ export function UrgencyBadge({ value, kind = 'closes', className = '' }) {
 export function AppliedBadge({ value, className = '' }) {
   const r = relativeApplied(value)
   if (!r) return null
-  const color = r.level === 'today' ? '#2E9E50' : r.level === 'recent' ? '#3D6FD9' : '#8C8778'
+  const color = r.level === 'today' ? '#10B981' : r.level === 'recent' ? '#3B82F6' : '#64748B'
   return (
     <span className={`pill ${className}`} style={tone(color)}>
       {r.label}
@@ -161,7 +153,7 @@ export function WaitingBadge({ app, className = '' }) {
   if (days === null) return null
   const waited = -days
   if (waited < 0) return null
-  const color = waited > 21 ? '#CC4B3C' : waited > 10 ? '#D48A0C' : '#8C8778'
+  const color = waited > 21 ? '#E5484D' : waited > 10 ? '#F59E0B' : '#64748B'
   return (
     <span className={`pill ${className}`} style={tone(color)} title="Days since you applied with no reply logged">
       <span className="num">{waited}d</span> waiting

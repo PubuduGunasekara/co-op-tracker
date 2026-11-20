@@ -23,8 +23,8 @@ import {
 } from '../lib/analytics.js'
 import { ArrowRightIcon } from '../components/ui/Icons.jsx'
 
-const KIND_COLOR = { OA: '#8559D6', Phone: '#12968B', Onsite: '#D48A0C', Deadline: '#D4540C', Window: '#8C8778' }
-const STAGE_COLORS = ['#CC4B3C', '#D4540C', '#D48A0C', '#8C8778', '#6F8F0E', '#B6B2A3']
+const KIND_COLOR = { OA: '#8B5CF6', Phone: '#06B6D4', Onsite: '#F59E0B', Deadline: '#F76B15', Window: '#64748B' }
+const STAGE_COLORS = ['#E5484D', '#F76B15', '#F59E0B', '#64748B', '#4A63F7', '#94A3B8']
 const short = (iso) => formatDate(iso, { month: 'short', day: 'numeric' })
 const MIN_GROUP = 3 // groups smaller than this are too noisy to rank
 
@@ -34,7 +34,7 @@ function Panel({ title, sub, right, children, className = '' }) {
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">{title}</h2>
-          {sub && <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{sub}</p>}
+          {sub && <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">{sub}</p>}
         </div>
         {right}
       </div>
@@ -67,7 +67,7 @@ function Radar({ apps, today }) {
       right={
         <div className="hidden flex-wrap justify-end gap-x-3 gap-y-1 sm:flex">
           {Object.entries(KIND_COLOR).map(([k, c]) => (
-            <span key={k} className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <span key={k} className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
               <span className="h-2 w-2 rounded-sm" style={{ background: c }} />
               {k === 'Deadline' ? 'Deadline' : k === 'Window' ? 'Opens' : k}
             </span>
@@ -98,11 +98,11 @@ function Radar({ apps, today }) {
                   aria-label={`${formatDate(iso)}: ${list.length} event${list.length === 1 ? '' : 's'}`}
                   className={`flex min-h-[84px] flex-col items-stretch gap-1 rounded-lg border p-1.5 text-left transition-colors ${
                     isPicked
-                      ? 'border-slate-900 bg-white shadow-[0_0_0_3px_rgba(198,242,78,0.55)] dark:border-accent dark:bg-slate-900'
-                      : 'border-slate-200 bg-white hover:border-slate-400 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-slate-600'
+                      ? 'border-brand-500 bg-brand-50/60 shadow-[0_0_0_3px_rgba(74,99,247,0.18)] dark:border-brand-400 dark:bg-brand-500/10'
+                      : 'border-slate-200 bg-white hover:border-slate-400 dark:border-white/[0.07] dark:bg-white/[0.03] dark:hover:border-slate-600'
                   } ${past ? 'opacity-55' : ''}`}
                 >
-                  <span className={`num inline-flex h-5 min-w-[20px] items-center justify-center self-start rounded-full px-1 text-[11px] font-semibold ${isToday ? 'bg-accent text-slate-900' : 'text-slate-500 dark:text-slate-400'}`}>
+                  <span className={`num inline-flex h-5 min-w-[20px] items-center justify-center self-start rounded-full px-1 text-[11px] font-semibold ${isToday ? 'bg-accent text-white' : 'text-slate-600 dark:text-slate-400'}`}>
                     {Number(iso.slice(8))}
                     {Number(iso.slice(8)) === 1 && <span className="ml-1 font-normal">{formatDate(iso, { month: 'short' })}</span>}
                   </span>
@@ -114,7 +114,7 @@ function Radar({ apps, today }) {
                       </span>
                     </span>
                   ))}
-                  {list.length > 3 && <span className="num text-[10.5px] text-slate-500">+{list.length - 3} more</span>}
+                  {list.length > 3 && <span className="num text-[10.5px] text-slate-600">+{list.length - 3} more</span>}
                 </button>
               )
             })}
@@ -122,17 +122,17 @@ function Radar({ apps, today }) {
         </div>
       </div>
 
-      <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
+      <div className="mt-4 border-t border-slate-100 pt-3 dark:border-white/[0.07]">
         <p className="eyebrow mb-2">{focus === today ? 'Today' : formatDate(focus, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
         {focusEvents.length === 0 ? (
-          <p className="text-xs text-slate-400">Nothing dated on this day. Pick another, or check the list below.</p>
+          <p className="text-xs text-slate-500">Nothing dated on this day. Pick another, or check the list below.</p>
         ) : (
           <ul className="space-y-1.5">
             {focusEvents.map((e, i) => (
-              <li key={i} className="flex flex-wrap items-center gap-2 text-sm">
-                <EventChip kind={e.kind} date={e.date} days={e.days} />
-                <span className="font-medium text-slate-900 dark:text-slate-50">{e.app.company}</span>
-                <span className="truncate text-xs text-slate-500">{e.app.role}</span>
+              <li key={i} className="flex min-w-0 items-center gap-2 text-sm">
+                <EventChip kind={e.kind} date={e.date} days={e.days} className="shrink-0" />
+                <span className="shrink-0 font-semibold text-slate-900 dark:text-white">{e.app.company}</span>
+                <span className="min-w-0 truncate text-xs text-slate-600 dark:text-slate-400" title={e.app.role}>{e.app.role}</span>
               </li>
             ))}
           </ul>
@@ -146,9 +146,9 @@ function Attention({ apps, today, oa, onNavigate }) {
   const missed = missedDeadlines(apps, today)
   const stale = apps.filter((a) => a.status === 'Applied' && a.dateApplied && (new Date(today) - new Date(a.dateApplied)) / 864e5 >= 21)
   const items = [
-    { key: 'oa', tone: '#8559D6', title: 'OA finished, no result logged', list: oa.needsResult, hint: 'Record Passed / Failed so your OA stats stay honest.' },
-    { key: 'stale', tone: '#D48A0C', title: 'Waiting 21+ days with no reply', list: stale, hint: 'Worth a follow-up, or mark as quiet.' },
-    { key: 'missed', tone: '#CC4B3C', title: 'Deadline passed, never applied', list: missed, hint: 'Check whether the posting is still open.' },
+    { key: 'oa', tone: '#8B5CF6', title: 'OA finished, no result logged', list: oa.needsResult, hint: 'Record Passed / Failed so your OA stats stay honest.' },
+    { key: 'stale', tone: '#F59E0B', title: 'Waiting 21+ days with no reply', list: stale, hint: 'Worth a follow-up, or mark as quiet.' },
+    { key: 'missed', tone: '#E5484D', title: 'Deadline passed, never applied', list: missed, hint: 'Check whether the posting is still open.' },
   ]
   return (
     <Panel title="Needs attention" sub="Things that quietly slip">
@@ -163,14 +163,14 @@ function Attention({ apps, today, oa, onNavigate }) {
               <span className="display text-2xl leading-none">{it.list.length}</span>
             </div>
             {it.list.length > 0 ? (
-              <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400" title={it.list.map((a) => a.company).join(', ')}>
+              <p className="mt-1 truncate text-xs text-slate-600 dark:text-slate-400" title={it.list.map((a) => a.company).join(', ')}>
                 {it.list.slice(0, 4).map((a) => a.company).join(', ')}
                 {it.list.length > 4 && ` and ${it.list.length - 4} more`}
               </p>
             ) : (
-              <p className="mt-1 text-xs text-slate-400">All clear.</p>
+              <p className="mt-1 text-xs text-slate-500">All clear.</p>
             )}
-            <p className="text-[11px] text-slate-400">{it.hint}</p>
+            <p className="text-[11px] text-slate-500">{it.hint}</p>
           </li>
         ))}
       </ul>
@@ -197,12 +197,12 @@ function Funnel({ apps }) {
             </div>
             <span className="num text-right text-xs text-slate-600 dark:text-slate-300">
               <strong className="text-slate-900 dark:text-slate-50">{r.count}</strong>
-              <span className="text-slate-400"> · {r.step == null ? 'start' : `${pct(r.step)} of prev`}</span>
+              <span className="text-slate-500"> · {r.step == null ? 'start' : `${pct(r.step)} of prev`}</span>
             </span>
           </li>
         ))}
       </ul>
-      {rows[0].count === 0 && <p className="mt-4 text-xs text-slate-400">Apply to something to start the funnel.</p>}
+      {rows[0].count === 0 && <p className="mt-4 text-xs text-slate-500">Apply to something to start the funnel.</p>}
     </Panel>
   )
 }
@@ -218,7 +218,7 @@ function RejectionPanel({ apps }) {
       sub={stats.total ? `${stats.total} rejections${worst?.count ? `, most at ${worst.short}` : ''}` : 'Mark an application Rejected to see this fill in'}
     >
       {stats.total === 0 ? (
-        <p className="py-6 text-center text-xs text-slate-400">No rejections recorded.</p>
+        <p className="py-6 text-center text-xs text-slate-500">No rejections recorded.</p>
       ) : (
         <>
           <div className="mb-1.5 grid grid-cols-[4.5rem_1fr_5.5rem_4.5rem] gap-3">
@@ -241,14 +241,14 @@ function RejectionPanel({ apps }) {
                   <span className="num whitespace-nowrap text-right text-xs text-slate-600 dark:text-slate-300">
                     <strong className="text-slate-900 dark:text-slate-50">{r.count}</strong> · {pct(r.pct)}
                   </span>
-                  <span className="num whitespace-nowrap text-right text-xs text-slate-500 dark:text-slate-400" title={r.avgDays == null ? 'No rows with both dates' : `${r.daysSample} rows with both dates`}>
+                  <span className="num whitespace-nowrap text-right text-xs text-slate-600 dark:text-slate-400" title={r.avgDays == null ? 'No rows with both dates' : `${r.daysSample} rows with both dates`}>
                     {r.avgDays == null ? '—' : `${Math.round(r.avgDays)}d`}
                   </span>
                 </li>
               )
             })}
           </ul>
-          <p className="mt-3 text-[11px] text-slate-400">Days = from the date you applied to the date rejected, only for rows with both dates.</p>
+          <p className="mt-3 text-[11px] text-slate-500">Days = from the date you applied to the date rejected, only for rows with both dates.</p>
         </>
       )}
     </Panel>
@@ -268,10 +268,10 @@ function OAPanel({ apps, today }) {
         <Mini label="Pass rate" value={oa.passRate == null ? '—' : pct(oa.passRate)} hint={`${oa.passed} passed · ${oa.failed} failed`} />
         <Mini label="Result not logged" value={oa.needsResult.length} hint="OA date has passed" hot={oa.needsResult.length > 0} />
       </div>
-      <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
+      <div className="mt-4 border-t border-slate-100 pt-3 dark:border-white/[0.07]">
         <p className="eyebrow mb-2">Upcoming OAs</p>
         {oa.upcoming.length === 0 ? (
-          <p className="text-xs text-slate-400">No OA dates scheduled. Add one in an application's Pipeline stages.</p>
+          <p className="text-xs text-slate-500">No OA dates scheduled. Add one in an application's Pipeline stages.</p>
         ) : (
           <ul className="space-y-1.5">
             {oa.upcoming.slice(0, 6).map((a) => {
@@ -283,7 +283,7 @@ function OAPanel({ apps, today }) {
                 </li>
               )
             })}
-            {next && oa.upcoming.length > 6 && <li className="text-xs text-slate-400">+{oa.upcoming.length - 6} more</li>}
+            {next && oa.upcoming.length > 6 && <li className="text-xs text-slate-500">+{oa.upcoming.length - 6} more</li>}
           </ul>
         )}
       </div>
@@ -295,8 +295,8 @@ function Mini({ label, value, hint, hot }) {
   return (
     <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
       <p className="eyebrow">{label}</p>
-      <p className={`display mt-1.5 text-3xl leading-none ${hot ? 'text-[#D4540C]' : 'text-slate-900 dark:text-slate-50'}`}>{value}</p>
-      {hint && <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">{hint}</p>}
+      <p className={`display mt-1.5 text-3xl leading-none ${hot ? 'text-[#F76B15]' : 'text-slate-900 dark:text-slate-50'}`}>{value}</p>
+      {hint && <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">{hint}</p>}
     </div>
   )
 }
@@ -310,7 +310,7 @@ function ResponseCard({ title, sub, apps, keyFn }) {
       label: g.label,
       value: g.rate ?? 0,
       text: `${pct(g.rate)} · ${g.answered}/${g.applied}`,
-      color: g.applied < 10 ? '#A29D8D' : '#5E5B50',
+      color: g.applied < 10 ? '#94A3B8' : '#4A63F7',
     }))
   return (
     <Panel title={title} sub={sub}>
@@ -346,8 +346,8 @@ export default function Insights({ onNavigate }) {
   return (
     <div className="space-y-5">
       <div className="hidden lg:block">
-        <h1 className="display text-4xl leading-none text-slate-900 dark:text-slate-50">Insights</h1>
-        <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">What is working, what is stuck, and what is coming up.</p>
+        <h1 className="display text-[28px] leading-none text-slate-900 dark:text-slate-50">Insights</h1>
+        <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">What is working, what is stuck, and what is coming up.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

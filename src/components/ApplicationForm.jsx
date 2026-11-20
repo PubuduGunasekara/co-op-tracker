@@ -122,7 +122,7 @@ function JobLinkImport({ onFill }) {
       {status === 'error' && (
         <div className="mt-2 space-y-2">
           <p className="text-xs text-amber-600 dark:text-amber-400">{error}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-600 dark:text-slate-400">
             Most sites block direct fetching from the browser. Instead, paste the job description
             text — or the page's HTML source (right-click → View Page Source → select all → copy)
             — and we'll pull out what we can:
@@ -253,9 +253,9 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
         </section>
 
         {draft.status === 'Rejected' && (
-          <section className="rounded-lg border border-[#CC4B3C]/30 bg-[#CC4B3C]/5 p-3">
+          <section className="rounded-lg border border-[#E5484D]/30 bg-[#E5484D]/5 p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <h3 className="eyebrow !text-[#B23B2D]">Rejection</h3>
+              <h3 className="eyebrow !text-[#CE2C31]">Rejection</h3>
               {historyBeforeRejection(draft.statusHistory).length > 0 && (
                 <button type="button" className="text-xs font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900 dark:text-slate-300" onClick={suggestStage}>
                   Suggest stage from history
@@ -302,7 +302,7 @@ export default function ApplicationForm({ open, application, onClose, onSave }) 
               <option key={r} value={r} />
             ))}
           </datalist>
-          <p className="mt-1.5 text-xs text-slate-400">Match is a snapshot of the estimate when you applied — it is never recalculated.</p>
+          <p className="mt-1.5 text-xs text-slate-500">Match is a snapshot of the estimate when you applied — it is never recalculated.</p>
           {showResumeHint && (
             <p className="mt-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
               No resume recorded for an applied row. You can still save, but resume stats will skip it.

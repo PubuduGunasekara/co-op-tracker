@@ -3,7 +3,7 @@ import { useApp } from '../store.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import { PlusIcon, TrashIcon, ExternalIcon, UsersIcon } from '../components/ui/Icons.jsx'
 
-const TH = 'sticky top-0 z-10 whitespace-nowrap bg-slate-50 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:bg-slate-800/90 dark:text-slate-400'
+const TH = 'sticky top-0 z-10 whitespace-nowrap bg-slate-50 px-3 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-800/90 dark:text-slate-400'
 const TD = 'px-3 py-2 align-middle'
 
 // Text cell that commits to the store on blur.
@@ -43,7 +43,7 @@ export default function Referrals() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500 dark:text-slate-400">{referrals.length} referral contact{referrals.length === 1 ? '' : 's'}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">{referrals.length} referral contact{referrals.length === 1 ? '' : 's'}</p>
         <button className="btn-primary" onClick={() => { addReferral(); toast('Added referral row.') }}>
           <PlusIcon className="h-4 w-4" /> Add referral
         </button>
@@ -71,7 +71,7 @@ export default function Referrals() {
                   <th className={TH}></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
                 {referrals.map((r) => (
                   <tr key={r.id} className="group hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
                     <td className={`${TD} min-w-[140px]`}><Cell value={r.contactName} placeholder="Name" onCommit={(v) => updateReferral(r.id, { contactName: v })} /></td>
@@ -81,7 +81,7 @@ export default function Referrals() {
                       <div className="flex items-center gap-1">
                         <Cell value={r.linkedinUrl} placeholder="URL" onCommit={(v) => updateReferral(r.id, { linkedinUrl: v })} />
                         {r.linkedinUrl && (
-                          <a href={r.linkedinUrl} target="_blank" rel="noreferrer" className="shrink-0 text-slate-400 hover:text-indigo-600" aria-label="Open LinkedIn">
+                          <a href={r.linkedinUrl} target="_blank" rel="noreferrer" className="shrink-0 text-slate-500 hover:text-indigo-600" aria-label="Open LinkedIn">
                             <ExternalIcon className="h-4 w-4" />
                           </a>
                         )}
@@ -125,7 +125,7 @@ function EmptyState({ onAdd }) {
         <UsersIcon className="h-6 w-6" />
       </div>
       <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">No referral contacts yet</p>
-      <p className="mt-1 max-w-sm text-sm text-slate-400">Track people who can refer you — from first outreach to a confirmed referral and submitted application.</p>
+      <p className="mt-1 max-w-sm text-sm text-slate-500">Track people who can refer you — from first outreach to a confirmed referral and submitted application.</p>
       <button className="btn-primary mt-4" onClick={onAdd}><PlusIcon className="h-4 w-4" /> Add your first contact</button>
     </div>
   )

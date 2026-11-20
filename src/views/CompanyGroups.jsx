@@ -26,14 +26,14 @@ export default function CompanyGroups({ apps, onEdit }) {
         company,
         items: [...items].sort((a, b) => STAGE_ORDER.indexOf(b.status) - STAGE_ORDER.indexOf(a.status)),
       }))
-      .sort((x, y) => x.company.localeCompare(y.company))
+      // Groups keep first-seen order, which is newest posting first.
   }, [apps])
 
   if (groups.length === 0) {
     return (
       <div className="card p-10 text-center">
         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No applications match your filters.</p>
-        <p className="mt-1 text-sm text-slate-400">Adjust the filters above, or add a new application.</p>
+        <p className="mt-1 text-sm text-slate-500">Adjust the filters above, or add a new application.</p>
       </div>
     )
   }
@@ -62,7 +62,7 @@ export default function CompanyGroups({ apps, onEdit }) {
                 </span>
                 <div className="min-w-0">
                   <p className="truncate font-bold text-slate-800 dark:text-slate-100">{company}</p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     {items.length} application{items.length === 1 ? '' : 's'}
                   </p>
                 </div>
@@ -73,17 +73,17 @@ export default function CompanyGroups({ apps, onEdit }) {
                     <StatusPill key={a.id} status={a.status} />
                   ))}
                   {items.length > 3 && (
-                    <span className="pill bg-slate-100 text-slate-500 ring-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-600">
+                    <span className="pill bg-slate-100 text-slate-600 ring-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-600">
                       +{items.length - 3}
                     </span>
                   )}
                 </div>
-                <ChevronUpDownIcon className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${isOpen ? '' : '-rotate-90'}`} />
+                <ChevronUpDownIcon className={`h-4 w-4 shrink-0 text-slate-500 transition-transform ${isOpen ? '' : '-rotate-90'}`} />
               </div>
             </button>
 
             {isOpen && (
-              <div className="divide-y divide-slate-100 border-t border-slate-100 dark:divide-slate-800 dark:border-slate-800">
+              <div className="divide-y divide-slate-100 border-t border-slate-100 dark:divide-white/[0.06] dark:border-white/[0.07]">
                 {items.map((a) => (
                   <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
                     <div className="flex min-w-0 items-center gap-2">
@@ -91,7 +91,7 @@ export default function CompanyGroups({ apps, onEdit }) {
                       <span className="truncate text-sm font-medium text-slate-700 dark:text-slate-200">{a.role || 'Role TBD'}</span>
                       <LocationTag app={a} className="hidden sm:inline-flex" />
                       {a.portalLink && (
-                        <a href={a.portalLink} target="_blank" rel="noreferrer" className="shrink-0 text-slate-400 hover:text-indigo-600" aria-label={`Open ${a.company} portal`}>
+                        <a href={a.portalLink} target="_blank" rel="noreferrer" className="shrink-0 text-slate-500 hover:text-indigo-600" aria-label={`Open ${a.company} portal`}>
                           <ExternalIcon className="h-3.5 w-3.5" />
                         </a>
                       )}
@@ -102,7 +102,7 @@ export default function CompanyGroups({ apps, onEdit }) {
                       {a.dateApplied ? (
                         <AppliedBadge value={a.dateApplied} className="hidden md:inline-flex" />
                       ) : (
-                        <span className="hidden text-xs text-slate-400 md:inline">{a.cycleType}</span>
+                        <span className="hidden text-xs text-slate-500 md:inline">{a.cycleType}</span>
                       )}
                       <button className="btn-ghost p-1.5" onClick={() => onEdit(a)} aria-label={`Edit ${a.role || a.company}`}>
                         <EditIcon className="h-4 w-4" />

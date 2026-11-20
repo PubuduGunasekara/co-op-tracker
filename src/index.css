@@ -5,77 +5,78 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
-    font-feature-settings: 'ss01', 'cv11';
+    font-feature-settings: 'cv11', 'ss01', 'tnum' 0;
   }
   body {
-    @apply bg-slate-100 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-[#F4F6FB] text-[15px] text-slate-900 antialiased dark:bg-[#0B0E14] dark:text-slate-100;
   }
   ::selection {
-    @apply bg-accent text-slate-900;
+    @apply bg-brand-200 text-slate-900;
   }
-  /* Visible focus ring for keyboard users. */
   :focus-visible {
-    @apply outline-none ring-2 ring-slate-900 ring-offset-2 ring-offset-slate-100 dark:ring-accent dark:ring-offset-slate-950;
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white dark:ring-brand-400 dark:ring-offset-[#0B0E14];
   }
 }
 
 @layer components {
   .card {
-    @apply rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900;
+    @apply rounded-xl border border-slate-200/80 bg-white shadow-card dark:border-white/[0.07] dark:bg-[#131720];
   }
 
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800
-      placeholder:text-slate-400 transition-shadow
-      focus:border-slate-900 focus:shadow-[0_0_0_3px_rgba(198,242,78,0.6)] focus:outline-none focus:ring-0
-      dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500
-      dark:focus:border-accent dark:focus:shadow-[0_0_0_3px_rgba(198,242,78,0.25)];
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm
+      placeholder:text-slate-500 transition-shadow
+      focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15
+      dark:border-white/10 dark:bg-[#0F131B] dark:text-slate-100 dark:placeholder:text-slate-500
+      dark:focus:border-brand-400 dark:focus:ring-brand-400/20;
   }
   select.input {
     @apply pr-8;
   }
   .label {
-    @apply mb-1 block font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400;
+    @apply mb-1.5 block text-[13px] font-medium text-slate-700 dark:text-slate-300;
   }
   .eyebrow {
-    @apply font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400;
+    @apply text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400;
   }
   .display {
-    @apply font-display font-normal tracking-tight;
+    @apply font-display font-bold tracking-tight;
   }
   .num {
-    @apply font-mono tabular-nums;
+    @apply tabular-nums;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium
-      transition-[background-color,transform,box-shadow] active:translate-y-px
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold
+      transition-[background-color,box-shadow,transform] active:translate-y-px
       focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 disabled:active:translate-y-0;
   }
   .btn-primary {
-    @apply btn bg-slate-900 text-white hover:bg-slate-700 dark:bg-accent dark:text-slate-900 dark:hover:bg-accent-hover;
+    @apply btn bg-brand-500 text-white shadow-sm shadow-brand-500/30 hover:bg-brand-600 dark:bg-brand-500 dark:hover:bg-brand-400;
   }
   .btn-secondary {
-    @apply btn border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50
-      dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700;
+    @apply btn border border-slate-300 bg-white text-slate-800 shadow-sm hover:bg-slate-50
+      dark:border-white/10 dark:bg-white/[0.04] dark:text-slate-100 dark:hover:bg-white/[0.08];
   }
   .btn-danger {
-    @apply btn bg-[#C2402F] text-white hover:bg-[#A93526];
+    @apply btn bg-[#E5484D] text-white hover:bg-[#CE2C31];
   }
   .btn-ghost {
-    @apply btn text-slate-600 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800;
+    @apply btn text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/[0.06];
   }
 
   /* Tinted tag. Set --c (any colour) on the element or a parent. */
   .pill {
-    --c: #8c8778;
-    @apply inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-[3px] text-[11px] font-medium leading-none;
-    color: color-mix(in oklab, var(--c) 70%, #000);
-    background: color-mix(in oklab, var(--c) 14%, transparent);
+    --c: #64748b;
+    @apply inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-xs font-semibold leading-none;
+    color: color-mix(in oklab, var(--c) 78%, #000);
+    background: color-mix(in oklab, var(--c) 13%, #fff);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 22%, transparent);
   }
   .dark .pill {
-    color: color-mix(in oklab, var(--c) 60%, #fff);
-    background: color-mix(in oklab, var(--c) 22%, transparent);
+    color: color-mix(in oklab, var(--c) 55%, #fff);
+    background: color-mix(in oklab, var(--c) 20%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--c) 32%, transparent);
   }
   .pill-dot {
     @apply h-1.5 w-1.5 shrink-0 rounded-full;
@@ -85,10 +86,10 @@
     @apply pill;
     color: #fff !important;
     background: var(--c) !important;
+    box-shadow: none !important;
   }
 }
 
-/* Thin, quiet scrollbars (board columns, modals). */
 .scroll-thin {
   scrollbar-width: thin;
   scrollbar-color: theme('colors.slate.300') transparent;
@@ -105,20 +106,6 @@
 }
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
-}
-
-/* Subtle paper grain on the page background, so flat colour doesn't feel clinical. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: radial-gradient(rgba(60, 50, 20, 0.045) 1px, transparent 1px);
-  background-size: 18px 18px;
-}
-.dark body::before {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
 }
 
 @media (prefers-reduced-motion: reduce) {

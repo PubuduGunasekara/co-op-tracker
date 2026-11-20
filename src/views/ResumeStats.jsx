@@ -11,7 +11,7 @@ function GroupRow({ group }) {
         <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{group.label}</span>
         <span className="text-sm tabular-nums text-slate-600 dark:text-slate-300">
           <strong className="text-base text-slate-800 dark:text-slate-100">{pct(group.rate)}</strong>{' '}
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-500">
             ({group.responses} of {group.applied} applications)
           </span>
         </span>
@@ -35,13 +35,13 @@ function Section({ title, subtitle, groups, excluded, excludedReason }) {
   return (
     <div className="card p-5">
       <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200">{title}</h3>
-      <p className="text-xs text-slate-400">{subtitle}</p>
-      <ul className="mt-2 divide-y divide-slate-100 dark:divide-slate-800">
+      <p className="text-xs text-slate-500">{subtitle}</p>
+      <ul className="mt-2 divide-y divide-slate-100 dark:divide-white/[0.06]">
         {groups.map((g) => (
           <GroupRow key={g.label} group={g} />
         ))}
       </ul>
-      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+      <p className="mt-3 text-xs text-slate-600 dark:text-slate-400">
         <strong>{excluded}</strong> applied {excluded === 1 ? 'row' : 'rows'} excluded — {excludedReason}.
       </p>
     </div>

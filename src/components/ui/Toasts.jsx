@@ -15,9 +15,9 @@ export default function Toasts() {
             role="status"
             className={`pointer-events-auto flex animate-toast-in items-start gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-xl ring-1 ${
               isError
-                ? 'bg-[#C2402F] text-white ring-[#A93526]'
+                ? 'bg-[#E5484D] text-white ring-[#CE2C31]'
                 : isWarning
-                ? 'bg-[#E0A21B] text-slate-900 ring-[#C48A10]'
+                ? 'bg-[#F5A524] text-slate-900 ring-[#D98E0B]'
                 : 'bg-slate-900 text-white ring-slate-700 dark:bg-slate-800'
             }`}
           >

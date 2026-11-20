@@ -24,10 +24,11 @@ const PRIORITY_RANK = { High: 0, Med: 1, Low: 2 }
 const time = (v) => parseDate(v)?.getTime() ?? null
 const lastTouched = (a) => time(a.rejectionDate) ?? time(a.lastActivityDate) ?? 0
 
-// Board orderings. "smart" picks what matters per column: what is due first in
+// Board orderings. The default is newest added first. "smart" picks what matters per column: what is due first in
 // Not Applied, what has waited longest in Applied, what is next on the calendar
 // in the interview stages, and what moved most recently in Offer / Rejected.
 export const BOARD_SORTS = {
+  newest: 'Newest added first',
   smart: 'Smart (by column)',
   recent: 'Recent activity',
   priority: 'Priority',
@@ -36,6 +37,9 @@ export const BOARD_SORTS = {
 }
 
 function sorter(sort, status) {
+  // New applications are prepended to the list, so list order IS newest-first;
+  // a comparator that always returns 0 keeps it (Array.sort is stable).
+  if (sort === 'newest') return () => 0
   const byCompany = (a, b) => a.company.localeCompare(b.company)
   const byPriority = (a, b) => (PRIORITY_RANK[a.priority] ?? 9) - (PRIORITY_RANK[b.priority] ?? 9)
   if (sort === 'recent') return (a, b) => lastTouched(b) - lastTouched(a)
@@ -59,7 +63,7 @@ function sorter(sort, status) {
   return (a, b) => lastTouched(b) - lastTouched(a)
 }
 
-const STAGE_COLORS = ['#CC4B3C', '#D4540C', '#D48A0C', '#8C8778', '#6F8F0E', '#B6B2A3']
+const STAGE_COLORS = ['#E5484D', '#F76B15', '#F59E0B', '#64748B', '#4A63F7', '#94A3B8']
 
 // Tiny "where I get rejected" bar under the Rejected column header.
 function RejectionMix({ items }) {
@@ -75,7 +79,7 @@ function RejectionMix({ items }) {
         )}
         {unset > 0 && <div style={{ width: `${(unset / total) * 100}%` }} className="bg-slate-300 dark:bg-slate-700" title={`Stage not set: ${unset}`} />}
       </div>
-      <p className="mt-1 truncate text-[10.5px] text-slate-500 dark:text-slate-400">
+      <p className="mt-1 truncate text-[10.5px] text-slate-600 dark:text-slate-400">
         {counts
           .map((n, i) => (n ? `${n} ${REJECTION_SHORT[REJECTION_STAGES[i]]}` : null))
           .filter(Boolean)
@@ -127,22 +131,22 @@ const Card = memo(function Card({ a, dragging, onEdit, onDelete, onMove, onDragS
         onDragStart(a.id)
       }}
       onDragEnd={onDragEnd}
-      className={`group relative min-w-0 shrink-0 cursor-grab overflow-hidden rounded-lg border bg-white p-3 pl-3.5 text-left transition-[box-shadow,transform,opacity,border-color] active:cursor-grabbing dark:bg-slate-900 ${
+      className={`group relative min-w-0 shrink-0 cursor-grab overflow-hidden rounded-lg border bg-white p-3 pl-3.5 text-left shadow-card transition-[box-shadow,transform,opacity,border-color] active:cursor-grabbing dark:bg-[#171C27] ${
         dragging
           ? 'rotate-1 border-dashed border-slate-400 opacity-40'
-          : 'border-slate-200 hover:-translate-y-px hover:border-slate-300 hover:shadow-[0_6px_18px_-8px_rgba(40,35,20,0.35)] dark:border-slate-800 dark:hover:border-slate-600'
+          : 'border-slate-200/90 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lift dark:border-white/[0.07] dark:hover:border-brand-400/50'
       }`}
     >
       {/* Priority edge: only High is loud. */}
-      {a.priority === 'High' && <span className="absolute inset-y-0 left-0 w-[3px] bg-[#D4540C]" aria-hidden="true" />}
+      {a.priority === 'High' && <span className="absolute inset-y-0 left-0 w-[3px] bg-[#F76B15]" aria-hidden="true" />}
 
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-[14px] font-semibold leading-tight text-slate-900 dark:text-slate-50" title={a.company}>
+          <h3 className="truncate text-[15px] font-semibold leading-tight text-slate-900 dark:text-white" title={a.company}>
             {a.company || 'Untitled'}
           </h3>
           {a.role && (
-            <p className="mt-0.5 line-clamp-2 break-words text-xs leading-snug text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400" title={a.role}>
+            <p className="mt-1 line-clamp-2 break-words text-[13px] leading-snug text-slate-600 [overflow-wrap:anywhere] dark:text-slate-400" title={a.role}>
               {a.role}
             </p>
           )}
@@ -163,7 +167,7 @@ const Card = memo(function Card({ a, dragging, onEdit, onDelete, onMove, onDragS
         {a.status === 'Rejected' && a.rejectionStage && (
           <span
             className="pill"
-            style={{ '--c': '#CC4B3C' }}
+            style={{ '--c': '#E5484D' }}
             title={`${a.rejectionStage}${a.rejectionDate ? ` · ${formatDate(a.rejectionDate)}` : ''}`}
           >
             at {REJECTION_SHORT[a.rejectionStage] ?? 'Unknown'}
@@ -173,7 +177,7 @@ const Card = memo(function Card({ a, dragging, onEdit, onDelete, onMove, onDragS
         {a.status !== 'Applied' && a.status !== 'Not Applied' && a.dateApplied && <AppliedBadge value={a.dateApplied} />}
         {a.resumeUsed && (
           <span
-            className="max-w-full truncate rounded-md px-1.5 py-[3px] font-mono text-[10.5px] text-slate-500 ring-1 ring-inset ring-slate-200 dark:text-slate-400 dark:ring-slate-700"
+            className="max-w-full truncate rounded-md px-1.5 py-[3px] text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200 dark:text-slate-400 dark:ring-slate-700"
             title={`Resume: ${a.resumeUsed}${a.resumeVersion ? ' ' + a.resumeVersion : ''}`}
           >
             {a.resumeUsed}
@@ -184,7 +188,7 @@ const Card = memo(function Card({ a, dragging, onEdit, onDelete, onMove, onDragS
 
       {a.nextAction && (
         <p className="mt-2 flex items-start gap-1 text-xs text-slate-600 dark:text-slate-300">
-          <ArrowRightIcon className="mt-0.5 h-3 w-3 shrink-0 text-slate-400" />
+          <ArrowRightIcon className="mt-0.5 h-3 w-3 shrink-0 text-slate-500" />
           <span className="line-clamp-2 break-words [overflow-wrap:anywhere]" title={a.nextAction}>
             {a.nextAction}
           </span>
@@ -216,14 +220,14 @@ const Card = memo(function Card({ a, dragging, onEdit, onDelete, onMove, onDragS
             href={a.portalLink}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+            className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
             aria-label={`Open ${a.company} posting`}
           >
             <ExternalIcon className="h-3.5 w-3.5" />
           </a>
         )}
         <button
-          className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
+          className="inline-flex h-6 w-6 items-center justify-center rounded text-slate-600 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/10"
           onClick={() => onDelete(a)}
           aria-label={`Delete ${a.company}`}
         >
@@ -236,7 +240,7 @@ const Card = memo(function Card({ a, dragging, onEdit, onDelete, onMove, onDragS
 
 // The board: one column per status. Native HTML5 drag & drop (no dependency)
 // plus a per-card "Move" menu, which also works with a keyboard or on touch.
-export default function Kanban({ apps, onEdit, sort = 'smart' }) {
+export default function Kanban({ apps, onEdit, sort = 'newest' }) {
   const { addApplication, updateApplication, restoreApplication, deleteApplication, toast } = useApp()
   const [dragId, setDragId] = useState(null)
   const [overCol, setOverCol] = useState(null)
@@ -307,8 +311,8 @@ export default function Kanban({ apps, onEdit, sort = 'smart' }) {
               }}
               onDragLeave={() => setOverCol(null)}
               onDrop={() => onDrop(status)}
-              className={`flex w-11 shrink-0 flex-col items-center gap-3 rounded-xl border bg-slate-50 py-3 text-slate-600 transition-colors hover:bg-slate-200/60 dark:bg-slate-900/60 dark:text-slate-300 dark:hover:bg-slate-800 ${
-                isOver ? 'border-accent-deep ring-2 ring-accent' : 'border-slate-200 dark:border-slate-800'
+              className={`flex w-11 shrink-0 flex-col items-center gap-3 rounded-xl border bg-slate-100/80 py-3 text-slate-700 transition-colors hover:bg-slate-200/70 dark:bg-white/[0.025] dark:text-slate-300 dark:hover:bg-slate-800 ${
+                isOver ? 'border-brand-500 ring-4 ring-brand-500/20' : 'border-slate-200 dark:border-white/[0.06]'
               }`}
               aria-label={`Expand ${status} column (${items.length})`}
               title={`Expand ${status}`}
@@ -325,9 +329,10 @@ export default function Kanban({ apps, onEdit, sort = 'smart' }) {
           <section
             key={status}
             aria-label={`${status}, ${items.length} applications`}
-            className={`flex min-h-0 w-[19rem] shrink-0 flex-col rounded-xl border bg-slate-50/80 transition-[box-shadow,border-color] dark:bg-slate-900/50 ${
-              isOver ? 'border-accent-deep ring-2 ring-accent' : 'border-slate-200 dark:border-slate-800'
+            className={`flex min-h-0 w-[19.5rem] shrink-0 flex-col overflow-hidden rounded-xl border bg-slate-100/80 transition-[box-shadow,border-color] dark:bg-white/[0.025] ${
+              isOver ? 'border-brand-500 ring-4 ring-brand-500/20' : 'border-slate-200/80 dark:border-white/[0.06]'
             }`}
+            style={{ borderTop: `3px solid ${style.color}` }}
             onDragOver={(e) => {
               e.preventDefault()
               e.dataTransfer.dropEffect = 'move'
@@ -341,11 +346,11 @@ export default function Kanban({ apps, onEdit, sort = 'smart' }) {
               onDrop(status)
             }}
           >
-            <header className="px-3 pb-2 pt-3">
+            <header className="px-3 pb-2 pt-2.5" style={{ background: `linear-gradient(to bottom, color-mix(in oklab, ${style.color} 9%, transparent), transparent)` }}>
               <div className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full" style={{ background: style.color }} aria-hidden="true" />
-                <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{status}</h2>
-                <span className="num rounded bg-slate-200/80 px-1.5 py-0.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <h2 className="text-[15px] font-bold text-slate-900 dark:text-white">{status}</h2>
+                <span className="pill num" style={{ '--c': style.color }}>
                   {items.length}
                 </span>
                 <div className="ml-auto flex items-center">
@@ -360,7 +365,7 @@ export default function Kanban({ apps, onEdit, sort = 'smart' }) {
                 </div>
               </div>
               {note && (
-                <p className={`mt-1 pl-[18px] text-[11px] font-medium ${note.hot ? 'text-[#D4540C]' : 'text-slate-500 dark:text-slate-400'}`}>{note.text}</p>
+                <p className={`mt-1 pl-[18px] text-xs font-semibold ${note.hot ? 'text-[#E5560A]' : 'text-slate-600 dark:text-slate-400'}`}>{note.text}</p>
               )}
               {status === 'Not Applied' && adding && (
                 <div className="mt-2">
@@ -405,7 +410,7 @@ export default function Kanban({ apps, onEdit, sort = 'smart' }) {
               {items.length === 0 && (
                 <div
                   className={`flex flex-1 items-center justify-center rounded-lg border border-dashed py-8 text-xs ${
-                    isOver ? 'animate-drop-pulse border-accent-deep text-slate-700 dark:text-slate-200' : 'border-slate-300 text-slate-400 dark:border-slate-700'
+                    isOver ? 'animate-drop-pulse border-accent-deep text-slate-700 dark:text-slate-200' : 'border-slate-300 text-slate-500 dark:border-slate-700'
                   }`}
                 >
                   {isOver ? `Drop to move to ${status}` : 'Nothing here'}

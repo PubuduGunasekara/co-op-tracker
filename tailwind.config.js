@@ -1,73 +1,44 @@
 /** @type {import('tailwindcss').Config} */
-// Palette notes: `slate` and `white` are re-pointed to a warm paper/ink scale so
-// every existing utility class (and dark mode) picks up the new look together.
-// `indigo` is re-pointed to a near-black "ink" scale: the old brand colour is
-// retired, and the single bright accent is `accent` (a highlighter lime).
+// Cool neutrals (Tailwind's default slate) + one vivid brand blue. `indigo` and
+// `accent` both point at the brand scale so every existing utility picks it up.
+const brand = {
+  50: '#EEF1FF',
+  100: '#E0E5FF',
+  200: '#C4CCFF',
+  300: '#9EAAFF',
+  400: '#7584FB',
+  500: '#4A63F7',
+  600: '#3A4FE6',
+  700: '#2E3EC2',
+  800: '#28359B',
+  900: '#25317A',
+}
+
 export default {
   darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        white: '#FFFEFA',
-        slate: {
-          50: '#F8F6F0',
-          100: '#F0EDE4',
-          200: '#E4E0D3',
-          300: '#CFCABA',
-          400: '#A29D8D',
-          500: '#78746A',
-          600: '#5A574D',
-          700: '#403E37',
-          800: '#2A2823',
-          900: '#1C1B18',
-          950: '#131210',
-        },
-        indigo: {
-          50: '#F5F4EF',
-          100: '#E9E7DE',
-          200: '#D2CFC2',
-          300: '#B6B2A3',
-          400: '#8D897B',
-          500: '#5E5B50',
-          600: '#2F2D28',
-          700: '#22211D',
-          800: '#171613',
-          900: '#0F0E0C',
-        },
-        accent: {
-          DEFAULT: '#C6F24E',
-          hover: '#B5E53A',
-          soft: '#EDF9C2',
-          deep: '#6F8F0E',
-        },
+        indigo: brand,
+        brand,
+        accent: { DEFAULT: brand[500], hover: brand[600], soft: brand[50], deep: brand[700] },
       },
       fontFamily: {
-        sans: ['Geist', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Instrument Serif"', 'ui-serif', 'Georgia', 'serif'],
-        mono: ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+      },
+      boxShadow: {
+        card: '0 1px 2px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04)',
+        lift: '0 10px 24px -10px rgba(15,23,42,0.22), 0 2px 6px rgba(15,23,42,0.06)',
       },
       keyframes: {
-        'fade-in': {
-          '0%': { opacity: '0', transform: 'translateY(4px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        'slide-up': {
-          '0%': { opacity: '0', transform: 'translateY(12px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        'drawer-in': {
-          '0%': { opacity: '0', transform: 'translateX(24px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
-        },
-        'toast-in': {
-          '0%': { opacity: '0', transform: 'translateY(8px) scale(.98)' },
-          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
-        },
-        'drop-pulse': {
-          '0%,100%': { opacity: '.55' },
-          '50%': { opacity: '1' },
-        },
+        'fade-in': { '0%': { opacity: '0', transform: 'translateY(4px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        'slide-up': { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        'drawer-in': { '0%': { opacity: '0', transform: 'translateX(24px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+        'toast-in': { '0%': { opacity: '0', transform: 'translateY(8px) scale(.98)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
+        'drop-pulse': { '0%,100%': { opacity: '.55' }, '50%': { opacity: '1' } },
       },
       animation: {
         'fade-in': 'fade-in 0.18s ease-out',
