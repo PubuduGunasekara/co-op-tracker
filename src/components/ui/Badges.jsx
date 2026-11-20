@@ -1,85 +1,170 @@
 import { STATUS_STYLES, TIER_STYLES, PRIORITY_STYLES } from '../../lib/constants.js'
-import { urgency, relativeApplied } from '../../lib/dates.js'
+import { daysUntil, formatDate, relativeApplied, todayISO } from '../../lib/dates.js'
 import { formatLocation } from '../../lib/location.js'
+import { shortStage } from '../../lib/rejection.js'
+import { upcomingEvents } from '../../lib/analytics.js'
 import { PinIcon } from './Icons.jsx'
 
-// Status badge: always icon + label + color (never color alone).
-export function StatusPill({ status, className = '' }) {
+const tone = (color) => ({ '--c': color })
+
+// Status tag: colour dot + label. A rejected application can also show where it
+// was rejected ("Rejected · OA") when `app` is passed.
+export function StatusPill({ status, app, className = '' }) {
   const s = STATUS_STYLES[status] || STATUS_STYLES['Not Applied']
+  const stage = status === 'Rejected' && app?.rejectionStage ? shortStage(app.rejectionStage) : null
   return (
-    <span className={`pill ${s.pill} ${className}`}>
-      <span aria-hidden="true">{s.icon}</span>
-      {s.label}
+    <span className={`pill ${className}`} style={tone(s.color)}>
+      <span className="pill-dot" aria-hidden="true" />
+      <span className="truncate">{s.label}</span>
+      {stage && <span className="truncate opacity-80">· {stage}</span>}
     </span>
   )
 }
 
-// Small colored tier tag.
+// Where a rejection happened, e.g. "Rejected · OA". Renders nothing when not rejected.
+export function RejectionBadge({ app, className = '' }) {
+  if (app.status !== 'Rejected') return null
+  return <StatusPill status="Rejected" app={app} className={className} />
+}
+
+// Tier: the top tiers are drawn solid, the rest quietly outlined.
 export function TierTag({ tier, className = '' }) {
-  const t = TIER_STYLES[tier] || TIER_STYLES['Tier 2']
-  return <span className={`pill ${t.tag} ${className}`}>{t.label}</span>
+  const t = TIER_STYLES[tier]
+  const label = t?.label || tier || 'No tier'
+  const loud = t && t.rank <= 1
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center rounded-md px-1.5 py-[3px] font-mono text-[10.5px] font-medium uppercase leading-none tracking-wide ${
+        loud
+          ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+          : 'text-slate-500 ring-1 ring-inset ring-slate-300 dark:text-slate-400 dark:ring-slate-700'
+      } ${className}`}
+    >
+      {label}
+    </span>
+  )
 }
 
 export function PriorityTag({ priority, className = '' }) {
   const p = PRIORITY_STYLES[priority] || PRIORITY_STYLES.Med
   return (
-    <span className={`pill ${p.tag} ${className}`}>
-      <span aria-hidden="true">{p.icon}</span>
+    <span className={`pill ${className}`} style={tone(p.color)}>
+      <span className="pill-dot" aria-hidden="true" />
       {p.label}
     </span>
   )
 }
 
-// "📍 Toronto, Canada" — renders nothing when the application has no location.
+// "Toronto, Canada" with a pin. Renders nothing when there is no location.
 export function LocationTag({ app, wrap = false, className = '' }) {
   const text = formatLocation(app)
   if (!text) return null
   return (
-    <span className={`inline-flex min-w-0 items-center gap-1 text-xs text-slate-500 dark:text-slate-400 ${className}`}>
+    <span className={`inline-flex min-w-0 max-w-full items-center gap-1 text-xs text-slate-500 dark:text-slate-400 ${className}`}>
       <PinIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-      <span className={wrap ? 'break-words' : 'truncate'}>{text}</span>
+      <span className={wrap ? 'break-words [overflow-wrap:anywhere]' : 'truncate'} title={text}>
+        {text}
+      </span>
     </span>
   )
 }
 
-// Urgency badge for window/deadline dates. kind: 'opens' | 'closes'.
-const URGENCY_STYLES = {
-  comfortable: 'bg-green-100 text-green-700 ring-green-300 dark:bg-green-500/15 dark:text-green-300 dark:ring-green-500/40',
-  soon: 'bg-amber-100 text-amber-700 ring-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/40',
-  imminent: 'bg-rose-100 text-rose-700 ring-rose-300 dark:bg-rose-500/15 dark:text-rose-300 dark:ring-rose-500/40',
-  overdue: 'bg-rose-600 text-white ring-rose-700',
-}
-const URGENCY_ICON = { comfortable: '🟢', soon: '🟡', imminent: '🔴', overdue: '⚠️' }
+// -- Dates that matter ------------------------------------------------------
 
-export function UrgencyBadge({ value, kind = 'closes', className = '' }) {
-  const u = urgency(value, kind)
-  if (u.level === 'none' || !u.label) return null
+const TONE_COLOR = { late: '#CC4B3C', now: '#D4540C', soon: '#D48A0C', later: '#78746A' }
+
+function whenLabel(kind, days) {
+  if (days === 0) return 'today'
+  if (days === 1) return 'tomorrow'
+  if (days > 1) return `in ${days}d`
+  return kind === 'Deadline' ? `${-days}d overdue` : `${-days}d ago`
+}
+
+const KIND_LABEL = { Deadline: 'Due', Window: 'Opens', OA: 'OA', Phone: 'Phone', Onsite: 'Onsite' }
+
+function toneFor(kind, days) {
+  if (days < 0) return kind === 'Window' ? 'later' : 'late'
+  if (days <= 2) return 'now'
+  if (days <= 7) return 'soon'
+  return 'later'
+}
+
+// One dated event as a chip: "OA · Nov 24 · in 4d". Louder as it gets closer.
+export function EventChip({ kind, date, days, className = '' }) {
+  const t = toneFor(kind, days)
+  const urgent = t === 'now'
   return (
-    <span className={`pill ${URGENCY_STYLES[u.level]} ${className}`}>
-      <span aria-hidden="true">{URGENCY_ICON[u.level]}</span>
-      {u.label}
+    <span
+      className={`${urgent ? 'pill-solid' : 'pill'} ${className}`}
+      style={tone(TONE_COLOR[t])}
+      title={`${KIND_LABEL[kind]} ${formatDate(date)}`}
+    >
+      <span className="font-semibold">{KIND_LABEL[kind]}</span>
+      <span className="num opacity-90">{formatDate(date, { month: 'short', day: 'numeric' })}</span>
+      <span className="opacity-80">· {whenLabel(kind, days)}</span>
     </span>
   )
 }
 
-// "Applied X ago" badge — freshness fades from a vivid gradient (today) down
-// to muted grey (old), so recency reads at a glance without opening the card.
-const APPLIED_STYLES = {
-  today: 'bg-gradient-to-r from-fuchsia-500 via-violet-500 to-indigo-500 text-white ring-0 shadow-sm shadow-violet-500/40',
-  recent: 'bg-emerald-100 text-emerald-700 ring-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/40',
-  week: 'bg-sky-100 text-sky-700 ring-sky-300 dark:bg-sky-500/15 dark:text-sky-300 dark:ring-sky-500/40',
-  month: 'bg-amber-100 text-amber-700 ring-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:ring-amber-500/40',
-  old: 'bg-slate-100 text-slate-500 ring-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-600',
+// Every live OA / phone / onsite date and (while not yet applied) deadline for
+// one application. Past-due ones stay visible until a result is logged.
+export function EventChips({ app, className = '' }) {
+  const events = upcomingEvents([app], todayISO(), 120)
+  if (events.length === 0) return null
+  return (
+    <div className={`flex flex-wrap gap-1.5 ${className}`}>
+      {events.map((e) => (
+        <EventChip key={e.kind} kind={e.kind} date={e.date} days={e.days} />
+      ))}
+    </div>
+  )
 }
-const APPLIED_ICON = { today: '🚀', recent: '📨', week: '🕓', month: '📅', old: '🗓️' }
 
+// Compat wrapper used by the table: deadline / window text from a raw value.
+export function UrgencyBadge({ value, kind = 'closes', className = '' }) {
+  const days = daysUntil(value)
+  if (days === null) return null
+  const k = kind === 'opens' ? 'Window' : 'Deadline'
+  const t = days < 0 ? (kind === 'opens' ? 'later' : 'late') : days <= 2 ? 'now' : days <= 14 ? 'soon' : 'later'
+  const text =
+    days < 0
+      ? kind === 'opens'
+        ? `opened ${-days}d ago`
+        : `${-days}d overdue`
+      : days === 0
+      ? `${kind === 'opens' ? 'opens' : 'closes'} today`
+      : `${kind === 'opens' ? 'opens' : 'closes'} in ${days}d`
+  return (
+    <span className={`${t === 'now' ? 'pill-solid' : 'pill'} ${className}`} style={tone(TONE_COLOR[t])} data-kind={k}>
+      {text}
+    </span>
+  )
+}
+
+// "Applied 5d ago" — recency at a glance.
 export function AppliedBadge({ value, className = '' }) {
   const r = relativeApplied(value)
   if (!r) return null
+  const color = r.level === 'today' ? '#2E9E50' : r.level === 'recent' ? '#3D6FD9' : '#8C8778'
   return (
-    <span className={`pill font-bold ${APPLIED_STYLES[r.level]} ${className}`}>
-      <span aria-hidden="true">{APPLIED_ICON[r.level]}</span>
+    <span className={`pill ${className}`} style={tone(color)}>
       {r.label}
+    </span>
+  )
+}
+
+// How long an application has been sitting unanswered. Turns amber then red as
+// the silence stretches, so stale applications stand out on the board.
+export function WaitingBadge({ app, className = '' }) {
+  if (app.status !== 'Applied') return null
+  const days = daysUntil(app.dateApplied)
+  if (days === null) return null
+  const waited = -days
+  if (waited < 0) return null
+  const color = waited > 21 ? '#CC4B3C' : waited > 10 ? '#D48A0C' : '#8C8778'
+  return (
+    <span className={`pill ${className}`} style={tone(color)} title="Days since you applied with no reply logged">
+      <span className="num">{waited}d</span> waiting
     </span>
   )
 }

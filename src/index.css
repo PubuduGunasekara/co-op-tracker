@@ -5,59 +5,97 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    font-feature-settings: 'ss01', 'cv11';
   }
   body {
     @apply bg-slate-100 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100;
   }
-  /* Visible focus ring for keyboard users across the app (WCAG-AA friendly). */
+  ::selection {
+    @apply bg-accent text-slate-900;
+  }
+  /* Visible focus ring for keyboard users. */
   :focus-visible {
-    @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-white dark:ring-offset-slate-900;
+    @apply outline-none ring-2 ring-slate-900 ring-offset-2 ring-offset-slate-100 dark:ring-accent dark:ring-offset-slate-950;
   }
 }
 
 @layer components {
-  /* Card surface used by the dashboard, panels, and modals. */
   .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900;
+    @apply rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900;
   }
 
-  /* Shared form control styling. */
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm
-      placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500
-      dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500;
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800
+      placeholder:text-slate-400 transition-shadow
+      focus:border-slate-900 focus:shadow-[0_0_0_3px_rgba(198,242,78,0.6)] focus:outline-none focus:ring-0
+      dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500
+      dark:focus:border-accent dark:focus:shadow-[0_0_0_3px_rgba(198,242,78,0.25)];
+  }
+  select.input {
+    @apply pr-8;
   }
   .label {
-    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400;
+    @apply mb-1 block font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400;
+  }
+  .eyebrow {
+    @apply font-mono text-[10.5px] font-medium uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400;
+  }
+  .display {
+    @apply font-display font-normal tracking-tight;
+  }
+  .num {
+    @apply font-mono tabular-nums;
   }
 
-  /* Buttons. */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold
-      transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium
+      transition-[background-color,transform,box-shadow] active:translate-y-px
+      focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40 disabled:active:translate-y-0;
   }
   .btn-primary {
-    @apply btn bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800;
+    @apply btn bg-slate-900 text-white hover:bg-slate-700 dark:bg-accent dark:text-slate-900 dark:hover:bg-accent-hover;
   }
   .btn-secondary {
-    @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50
-      dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700;
+    @apply btn border border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50
+      dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700;
   }
   .btn-danger {
-    @apply btn bg-rose-600 text-white hover:bg-rose-700;
+    @apply btn bg-[#C2402F] text-white hover:bg-[#A93526];
   }
   .btn-ghost {
     @apply btn text-slate-600 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:bg-slate-800;
   }
 
-  /* Base pill/badge. */
+  /* Tinted tag. Set --c (any colour) on the element or a parent. */
   .pill {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold leading-none
-      ring-1 ring-inset;
+    --c: #8c8778;
+    @apply inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-[3px] text-[11px] font-medium leading-none;
+    color: color-mix(in oklab, var(--c) 70%, #000);
+    background: color-mix(in oklab, var(--c) 14%, transparent);
+  }
+  .dark .pill {
+    color: color-mix(in oklab, var(--c) 60%, #fff);
+    background: color-mix(in oklab, var(--c) 22%, transparent);
+  }
+  .pill-dot {
+    @apply h-1.5 w-1.5 shrink-0 rounded-full;
+    background: var(--c);
+  }
+  .pill-solid {
+    @apply pill;
+    color: #fff !important;
+    background: var(--c) !important;
   }
 }
 
-/* Thin, subtle scrollbars (kanban columns, modals). */
+/* Thin, quiet scrollbars (board columns, modals). */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.slate.300') transparent;
+}
+.dark .scroll-thin {
+  scrollbar-color: theme('colors.slate.700') transparent;
+}
 .scroll-thin::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -67,4 +105,27 @@
 }
 .scroll-thin::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* Subtle paper grain on the page background, so flat colour doesn't feel clinical. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(60, 50, 20, 0.045) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.dark body::before {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

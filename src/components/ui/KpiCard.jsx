@@ -1,36 +1,25 @@
-// Dashboard KPI card. `accent` selects a colored top bar + icon tint so the
-// dashboard reads at a glance. `hint` is an optional sub-label.
-const ACCENTS = {
-  indigo: { bar: 'bg-indigo-500', icon: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300' },
-  blue: { bar: 'bg-blue-500', icon: 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300' },
-  violet: { bar: 'bg-violet-500', icon: 'bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300' },
-  amber: { bar: 'bg-amber-500', icon: 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300' },
-  green: { bar: 'bg-green-500', icon: 'bg-green-100 text-green-600 dark:bg-green-500/15 dark:text-green-300' },
-  rose: { bar: 'bg-rose-500', icon: 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300' },
-  teal: { bar: 'bg-teal-500', icon: 'bg-teal-100 text-teal-600 dark:bg-teal-500/15 dark:text-teal-300' },
+// Headline number: quiet eyebrow label, large serif figure, optional hint.
+// `accent` is kept for call-site compatibility; it tints only a tiny marker.
+const MARK = {
+  indigo: '#2F2D28',
+  blue: '#3D6FD9',
+  violet: '#8559D6',
+  amber: '#D48A0C',
+  green: '#2E9E50',
+  rose: '#CC4B3C',
+  teal: '#12968B',
 }
 
-export default function KpiCard({ label, value, hint, icon, accent = 'indigo' }) {
-  const a = ACCENTS[accent] || ACCENTS.indigo
+export default function KpiCard({ label, value, hint, icon, accent = 'indigo', className = '' }) {
   return (
-    <div className="card relative overflow-hidden p-5">
-      <div className={`absolute inset-x-0 top-0 h-1 ${a.bar}`} />
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            {label}
-          </p>
-          <p className="mt-2 text-3xl font-extrabold tabular-nums text-slate-800 dark:text-slate-100">
-            {value}
-          </p>
-          {hint && <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{hint}</p>}
-        </div>
-        {icon && (
-          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${a.icon}`}>
-            {icon}
-          </div>
-        )}
+    <div className={`card relative p-4 ${className}`}>
+      <div className="flex items-center gap-2">
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: MARK[accent] || MARK.indigo }} aria-hidden="true" />
+        <p className="eyebrow truncate">{label}</p>
+        {icon && <span className="ml-auto text-slate-400 [&>svg]:h-4 [&>svg]:w-4">{icon}</span>}
       </div>
+      <p className="display mt-2 text-[40px] leading-none tabular-nums text-slate-900 dark:text-slate-50">{value}</p>
+      {hint && <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{hint}</p>}
     </div>
   )
 }

@@ -1,11 +1,14 @@
 import { seedData } from './seedData.js'
 import { normalizeResumeFields } from './resume.js'
+import { normalizeRejectionFields } from './rejection.js'
 
 // localStorage key keeps its "-v1" suffix on purpose: renaming it would orphan
 // existing saved data. It is unrelated to the backup-file SCHEMA_VERSION below.
 const STORAGE_KEY = 'coop-tracker-data-v1'
 export const THEME_KEY = 'coop-tracker-theme'
 // v2 adds resumeUsed / resumeVersion / resumeMatch to every application row.
+// rejectionStage / rejectionDate / rejectionStageSource were added later as
+// optional strings (missing -> ''), so the version number did not change.
 const SCHEMA_VERSION = 2
 const SUPPORTED_VERSIONS = [1, 2]
 
@@ -55,7 +58,8 @@ function backfillDateApplied(app) {
 
 /**
  * Ensure the three top-level collections always exist as arrays and every
- * application carries the three resume keys (null when absent/invalid).
+ * application carries the three resume keys (null when absent/invalid) and the
+ * three rejection keys ('' when absent).
  * Unknown keys — on rows and at the top level of `data` — pass through, so an
  * import followed by an export loses nothing.
  */
@@ -64,7 +68,9 @@ export function normalize(data, warn = console.warn) {
   return {
     ...extra,
     applications: Array.isArray(data?.applications)
-      ? data.applications.map((a) => normalizeResumeFields(backfillDateApplied(a), warn))
+      ? data.applications.map((a) =>
+          normalizeRejectionFields(normalizeResumeFields(backfillDateApplied(a), warn), warn)
+        )
       : [],
     referrals: Array.isArray(data?.referrals) ? data.referrals : [],
     interviews: Array.isArray(data?.interviews) ? data.interviews : [],

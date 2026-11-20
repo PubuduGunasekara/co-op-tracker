@@ -5,7 +5,12 @@ import { StatusPill, TierTag } from '../components/ui/Badges.jsx'
 import { parseDate, formatDate, today, todayISO } from '../lib/dates.js'
 import { TrendingIcon, CalendarIcon, CheckIcon, TableIcon } from '../components/ui/Icons.jsx'
 
-const MS_PER_DAY = 864e5
+// Calendar-day arithmetic: adding 24h repeats a date across a daylight-saving change.
+const shiftDays = (d, n) => {
+  const c = new Date(d)
+  c.setDate(c.getDate() + n)
+  return c
+}
 const GRANULARITIES = [
   { id: 'day', label: 'Day' },
   { id: 'week', label: 'Week' },
@@ -84,7 +89,7 @@ function buildBuckets(dated, granularity) {
     const end = parseDate(maxKey)
     while (cur <= end) {
       ordered.push(isoOf(cur))
-      cur = new Date(cur.getTime() + step * MS_PER_DAY)
+      cur = shiftDays(cur, step)
     }
   }
 
@@ -129,7 +134,7 @@ export default function Timeline() {
     let cursor = today()
     while (dayMap.has(isoOf(cursor))) {
       streak++
-      cursor = new Date(cursor.getTime() - MS_PER_DAY)
+      cursor = shiftDays(cursor, -1)
     }
 
     // Favorite weekday to apply.
@@ -139,7 +144,7 @@ export default function Timeline() {
 
     // Last 7 days count, for a lightweight momentum read.
     const last7 = [...Array(7)].reduce((sum, _, i) => {
-      const d = new Date(today().getTime() - i * MS_PER_DAY)
+      const d = shiftDays(today(), -i)
       return sum + (dayMap.get(isoOf(d))?.length || 0)
     }, 0)
 

@@ -97,7 +97,7 @@ export default function CompanyGroups({ apps, onEdit }) {
                       )}
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                      <StatusPill status={a.status} />
+                      <StatusPill status={a.status} app={a} />
                       <PriorityTag priority={a.priority} />
                       {a.dateApplied ? (
                         <AppliedBadge value={a.dateApplied} className="hidden md:inline-flex" />

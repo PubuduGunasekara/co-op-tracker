@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { loadState, saveState, exportToFile, importFromFile, THEME_KEY } from './lib/storage.js'
 import { todayISO } from './lib/dates.js'
+import { rejectionDefaults } from './lib/rejection.js'
 import { newApplication, newReferral, newInterview } from './lib/seedData.js'
 
 const AppContext = createContext(null)
@@ -36,10 +37,11 @@ export function AppProvider({ children }) {
   }, [])
 
   const toast = useCallback(
-    (message, kind = 'success') => {
+    // `action` is an optional { label, onClick } button (used for Undo).
+    (message, kind = 'success', action = null) => {
       const id = ++toastId
-      setToasts((t) => [...t, { id, message, kind }])
-      setTimeout(() => dismissToast(id), 3200)
+      setToasts((t) => [...t, { id, message, kind, action }])
+      setTimeout(() => dismissToast(id), action ? 6500 : 3200)
     },
     [dismissToast]
   )
@@ -81,6 +83,9 @@ export function AppProvider({ children }) {
             { status: patch.status, date: todayISO() },
           ]
           next.lastActivityDate = todayISO()
+          // Becoming Rejected (form, kanban drag, inline select) pre-fills the
+          // rejection date/stage from history. Only empty fields are filled.
+          if (patch.status === 'Rejected') Object.assign(next, rejectionDefaults(next, todayISO()))
           // Moving to "Applied" (e.g. dragging a Kanban card) should count as
           // applying today unless a date was already recorded, so the date-
           // applied sort/filter reflects reality without a separate manual step.
@@ -100,6 +105,14 @@ export function AppProvider({ children }) {
     (id, status) => updateApplication(id, { status }),
     [updateApplication]
   )
+
+  // Put an application back exactly as it was (used by Undo after a board move).
+  const restoreApplication = useCallback((snapshot) => {
+    setState((s) => ({
+      ...s,
+      applications: s.applications.map((a) => (a.id === snapshot.id ? snapshot : a)),
+    }))
+  }, [])
 
   const deleteApplication = useCallback((id) => {
     setState((s) => ({ ...s, applications: s.applications.filter((a) => a.id !== id) }))
@@ -168,6 +181,7 @@ export function AppProvider({ children }) {
       addApplication,
       updateApplication,
       moveApplicationStatus,
+      restoreApplication,
       deleteApplication,
       addReferral,
       updateReferral,
@@ -188,6 +202,7 @@ export function AppProvider({ children }) {
       addApplication,
       updateApplication,
       moveApplicationStatus,
+      restoreApplication,
       deleteApplication,
       addReferral,
       updateReferral,

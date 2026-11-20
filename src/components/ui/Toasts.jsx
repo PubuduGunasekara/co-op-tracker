@@ -13,11 +13,11 @@ export default function Toasts() {
           <div
             key={t.id}
             role="status"
-            className={`pointer-events-auto flex animate-toast-in items-start gap-3 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ring-1 ${
+            className={`pointer-events-auto flex animate-toast-in items-start gap-3 rounded-lg px-4 py-3 text-sm font-medium shadow-xl ring-1 ${
               isError
-                ? 'bg-rose-600 text-white ring-rose-700'
+                ? 'bg-[#C2402F] text-white ring-[#A93526]'
                 : isWarning
-                ? 'bg-amber-500 text-slate-900 ring-amber-600'
+                ? 'bg-[#E0A21B] text-slate-900 ring-[#C48A10]'
                 : 'bg-slate-900 text-white ring-slate-700 dark:bg-slate-800'
             }`}
           >
@@ -25,6 +25,17 @@ export default function Toasts() {
               {isError ? <CloseIcon className="h-4 w-4" /> : <CheckIcon className="h-4 w-4" />}
             </span>
             <span className="flex-1">{t.message}</span>
+            {t.action && (
+              <button
+                className="shrink-0 rounded-md bg-white/15 px-2 py-0.5 text-xs font-semibold hover:bg-white/25"
+                onClick={() => {
+                  t.action.onClick()
+                  dismissToast(t.id)
+                }}
+              >
+                {t.action.label}
+              </button>
+            )}
             <button
               className="shrink-0 opacity-70 hover:opacity-100"
               onClick={() => dismissToast(t.id)}

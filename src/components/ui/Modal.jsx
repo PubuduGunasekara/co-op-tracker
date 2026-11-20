@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { CloseIcon } from './Icons.jsx'
 
-// Accessible modal: closes on Escape / backdrop click, traps scroll, centers
-// content with a scrollable body for long forms.
-export default function Modal({ open, onClose, title, children, footer, size = 'lg' }) {
+// Accessible dialog. `variant="drawer"` slides in from the right (editing a
+// posting: the board stays visible behind it); "center" is for small confirms.
+export default function Modal({ open, onClose, title, subtitle, children, footer, size = 'lg', variant }) {
   useEffect(() => {
     if (!open) return
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -17,26 +17,36 @@ export default function Modal({ open, onClose, title, children, footer, size = '
 
   if (!open) return null
 
-  const sizes = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-3xl' }
+  const drawer = (variant ?? (size === 'sm' ? 'center' : 'drawer')) === 'drawer'
+  const sizes = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-2xl' }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm sm:p-8"
+      className={`fixed inset-0 z-50 flex bg-slate-950/45 backdrop-blur-[2px] ${drawer ? 'justify-end' : 'items-center justify-center p-4'}`}
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
-      <div className={`card my-auto w-full ${sizes[size]} animate-slide-up`}>
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{title}</h2>
-          <button className="btn-ghost -mr-2 p-2" onClick={onClose} aria-label="Close dialog">
+      <div
+        className={
+          drawer
+            ? `flex h-full w-full ${sizes[size]} animate-drawer-in flex-col border-l border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900`
+            : `card w-full ${sizes[size]} animate-slide-up shadow-2xl`
+        }
+      >
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+          <div className="min-w-0">
+            <h2 className="display truncate text-2xl leading-tight text-slate-900 dark:text-slate-50">{title}</h2>
+            {subtitle && <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
+          </div>
+          <button className="btn-ghost -mr-2 shrink-0 p-2" onClick={onClose} aria-label="Close dialog">
             <CloseIcon className="h-5 w-5" />
           </button>
         </div>
-        <div className="scroll-thin max-h-[70vh] overflow-y-auto px-5 py-4">{children}</div>
+        <div className={`scroll-thin overflow-y-auto px-5 py-4 ${drawer ? 'flex-1' : 'max-h-[70vh]'}`}>{children}</div>
         {footer && (
-          <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+          <div className="flex justify-end gap-2 border-t border-slate-200 bg-slate-50 px-5 py-3.5 dark:border-slate-800 dark:bg-slate-900">
             {footer}
           </div>
         )}
